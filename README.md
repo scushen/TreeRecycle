@@ -76,6 +76,11 @@ with one run per page and tick boxes.
 
 ## Setup (in order)
 
+**Secrets are never in git.** `Web.config` holds placeholders only. Two git-ignored files sit next to it in
+`TreeRecycle.Web\`:
+- `connectionStrings.config` (**required**, or the site won't start). Copy it from `connectionStrings.example.config`.
+- `secrets.config` (optional). Copy it from `secrets.example.config`. Any key in it overrides the Web.config value with the same name.
+
 1. **Database:** the tables live in the **KennelBooker database**, kept apart by the `TreeRecycle_` prefix. Run
    `SQL\01_create_tables.sql` against that database and point `dbConnection` at it, either in Web.config or in the App Service
    setting of the same name (which overrides Web.config). TreeRecycle runs as its own IIS site / app pool, so its
