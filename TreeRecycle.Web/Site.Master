@@ -1,0 +1,45 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.Master.cs" Inherits="TreeRecycle.Web.SiteMaster" %>
+<!DOCTYPE html>
+<html lang="en-IE">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%: Page.Title %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/css/site.css") %>?id=2" />
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server" />
+</head>
+<body>
+    <form id="form1" runat="server">
+        <header class="topbar">
+            <div class="wrap">
+                <a class="brand" href="<%: ResolveUrl("~/") %>">
+                    <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#9fd1b3" d="M16 2 6 15h5l-6 8h8v7h6v-7h8l-6-8h5z"/></svg>
+                    <%: SiteName %>
+                </a>
+                <nav class="nav">
+                    <a href="<%: ResolveUrl("~/") %>">Book a collection</a>
+                    <a href="<%: ResolveUrl("~/register.aspx") %>">Register your club</a>
+                    <a href="<%: ResolveUrl("~/login.aspx") %>">Club login</a>
+                </nav>
+            </div>
+        </header>
+        <asp:ContentPlaceHolder ID="HeroContent" runat="server" />
+        <main>
+            <div class="wrap">
+                <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+            </div>
+        </main>
+        <footer class="site">
+            <div class="wrap">
+                &copy; <%: DateTime.UtcNow.Year %> Shanree Solutions Ltd, trading as <%: SiteName %>.
+                Payments are taken by each club through Stripe. &middot;
+                <a href="<%: ResolveUrl("~/terms.aspx") %>">Terms</a> &middot;
+                <a href="<%: ResolveUrl("~/privacy.aspx") %>">Privacy</a>
+            </div>
+        </footer>
+    </form>
+    <asp:ContentPlaceHolder ID="Scripts" runat="server" />
+</body>
+</html>

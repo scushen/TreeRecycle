@@ -1,0 +1,45 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Club.Master.cs" Inherits="TreeRecycle.Web.ClubArea.ClubMaster" %>
+<!DOCTYPE html>
+<html lang="en-IE">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title><%: Page.Title %> - <%: ClubName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/css/site.css") %>?id=2" />
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server" />
+</head>
+<body>
+    <form id="form1" runat="server">
+        <header class="topbar">
+            <div class="wrap">
+                <a class="brand" href="<%: ResolveUrl("~/club/") %>">
+                    <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#9fd1b3" d="M16 2 6 15h5l-6 8h8v7h6v-7h8l-6-8h5z"/></svg>
+                    <%: ClubName %>
+                </a>
+                <nav class="nav">
+                    <%= NavLink("default.aspx", "Dashboard") %>
+                    <%= NavLink("orders.aspx", "Orders") %>
+                    <%= NavLink("routes.aspx", "Routes") %>
+                    <%= NavLink("dates.aspx", "Collection dates") %>
+                    <%= NavLink("prices.aspx", "Prices") %>
+                    <%= NavLink("emails.aspx", "Emails") %>
+                    <%= NavLink("money.aspx", "Money") %>
+                    <%= NavLink("details.aspx", "Club details") %>
+                    <%= NavLink("stripe.aspx", "Payments") %>
+                    <a href="<%: ResolveUrl("~/club/logout.aspx") %>">Log out</a>
+                </nav>
+            </div>
+        </header>
+        <main>
+            <div class="wrap">
+                <asp:Literal ID="litStatusBanner" runat="server" />
+                <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+            </div>
+        </main>
+    </form>
+    <asp:ContentPlaceHolder ID="Scripts" runat="server" />
+</body>
+</html>

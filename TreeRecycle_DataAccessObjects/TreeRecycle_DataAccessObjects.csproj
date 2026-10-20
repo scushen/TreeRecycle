@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6D1C2E3A-4B7F-4C1E-9A11-3F2B7C5D8E01}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>TreeRecycle.DataAccessObjects</RootNamespace>
+    <AssemblyName>TreeRecycle_DataAccessObjects</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <LangVersion>7.3</LangVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Castle.ActiveRecord"><HintPath>..\lib\Castle.ActiveRecord.dll</HintPath></Reference>
+    <Reference Include="Castle.Core"><HintPath>..\lib\Castle.Core.dll</HintPath></Reference>
+    <Reference Include="Castle.DynamicProxy2"><HintPath>..\lib\Castle.DynamicProxy2.dll</HintPath></Reference>
+    <Reference Include="Castle.Components.Validator"><HintPath>..\lib\Castle.Components.Validator.dll</HintPath></Reference>
+    <Reference Include="Iesi.Collections"><HintPath>..\lib\Iesi.Collections.dll</HintPath></Reference>
+    <Reference Include="log4net"><HintPath>..\lib\log4net.dll</HintPath></Reference>
+    <Reference Include="NHibernate"><HintPath>..\lib\NHibernate.dll</HintPath></Reference>
+    <Reference Include="NHibernate.ByteCode.Castle"><HintPath>..\lib\NHibernate.ByteCode.Castle.dll</HintPath></Reference>
+    <Reference Include="Newtonsoft.Json"><HintPath>..\lib\Newtonsoft.Json.dll</HintPath></Reference>
+    <Reference Include="Stripe.net"><HintPath>..\lib\Stripe.net.dll</HintPath></Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.Linq" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Helpers\**\*.cs" />
+    <Compile Include="Services\**\*.cs" />
+    <Compile Include="TR\**\*.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,3 @@
+Local LocalDB test data only (instance (localdb)\TreeRecycle). Never use in production.
+
+Test club login:  testclub@example.com / TestClub-2026!x
