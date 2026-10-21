@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Castle.ActiveRecord.Framework.Config;
@@ -23,9 +26,37 @@ namespace TreeRecycle.DataAccessObjects
             }
         }
 
+        /// <summary>
+        /// The "dbConnection" string, taken from the first of these that has a value:
+        /// 1. Azure App Service connection string named dbConnection (exposed as SQLAZURECONNSTR_ / SQLCONNSTR_ / CUSTOMCONNSTR_ env vars);
+        /// 2. Web.config's dbConnection entry, if it isn't the empty placeholder;
+        /// 3. connectionStrings.config next to Web.config - the git-ignored local file.
+        /// Web.config can't use configSource for this, because a configSource file that's missing (as on Azure) stops the site starting.
+        /// </summary>
         public static string GetConnectionString()
         {
-            return ConfigurationManager.ConnectionStrings["dbConnection"].ConnectionString;
+            foreach (string prefix in new[] { "SQLAZURECONNSTR_", "SQLCONNSTR_", "CUSTOMCONNSTR_" })
+            {
+                string fromAzure = Environment.GetEnvironmentVariable(prefix + "dbConnection");
+                if (!string.IsNullOrWhiteSpace(fromAzure))
+                    return fromAzure;
+            }
+
+            ConnectionStringSettings fromConfig = ConfigurationManager.ConnectionStrings["dbConnection"];
+            if (fromConfig != null && !string.IsNullOrWhiteSpace(fromConfig.ConnectionString))
+                return fromConfig.ConnectionString;
+
+            string localFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "connectionStrings.config");
+            if (File.Exists(localFile))
+            {
+                XElement entry = XDocument.Load(localFile).Descendants("add")
+                    .FirstOrDefault(e => (string)e.Attribute("name") == "dbConnection");
+                if (entry != null && !string.IsNullOrWhiteSpace((string)entry.Attribute("connectionString")))
+                    return (string)entry.Attribute("connectionString");
+            }
+
+            throw new ConfigurationErrorsException("No dbConnection connection string. Set it in the Azure App Service configuration, "
+                                                   + "or create connectionStrings.config from connectionStrings.example.config.");
         }
 
         private static IConfigurationSource GetConfiguration()

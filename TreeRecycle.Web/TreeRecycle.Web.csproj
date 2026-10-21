@@ -10,7 +10,7 @@
     <RootNamespace>TreeRecycle.Web</RootNamespace>
     <AssemblyName>TreeRecycle.Web</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>6</LangVersion>
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort>44380</IISExpressSSLPort>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

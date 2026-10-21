@@ -76,15 +76,23 @@ with one run per page and tick boxes.
 
 ## Setup (in order)
 
-**Secrets are never in git.** `Web.config` holds placeholders only. Two git-ignored files sit next to it in
-`TreeRecycle.Web\`:
-- `connectionStrings.config` (**required**, or the site won't start). Copy it from `connectionStrings.example.config`.
-- `secrets.config` (optional). Copy it from `secrets.example.config`. Any key in it overrides the Web.config value with the same name.
+**Secrets are never in git.** `Web.config` holds placeholders only, and its `dbConnection` is left empty on purpose.
+
+| Where | Database connection | Keys (Stripe, Google, Postmark, SiteUrl) |
+|---|---|---|
+| **Azure** | App Service → Configuration → **Connection strings**: name `dbConnection`, type SQLAzure or SQLServer | App Service → Configuration → **App settings**, using the same key names as Web.config |
+| **Local** | `TreeRecycle.Web\connectionStrings.config` (git-ignored; copy `connectionStrings.example.config`) | `TreeRecycle.Web\secrets.config` (git-ignored, optional; copy `secrets.example.config`) |
+
+`BusinessObjectsFactory.GetConnectionString` checks Azure first, then Web.config, then the local file. IIS refuses to
+serve `.config` files, so neither local file is reachable from the web.
+
+**Azure build:** continuous deployment builds on the App Service with MSBuild 14, which only understands C# 6. Both
+projects pin `<LangVersion>6</LangVersion>`, so C# 7 features (`out var`, tuples, pattern matching, local functions)
+will break the deploy.
 
 1. **Database:** the tables live in the **KennelBooker database**, kept apart by the `TreeRecycle_` prefix. Run
-   `SQL\01_create_tables.sql` against that database and point `dbConnection` at it, either in Web.config or in the App Service
-   setting of the same name (which overrides Web.config). TreeRecycle runs as its own IIS site / app pool, so its
-   ActiveRecord setup never touches KennelBooker's.
+   `SQL\01_create_tables.sql` against that database and set `dbConnection` as in the table above. TreeRecycle runs as
+   its own site / app pool, so its ActiveRecord setup never touches KennelBooker's.
 2. **Stripe** (new platform account): enable Connect, set branding, copy the secret key into `StripeSecretKey`.
    Add **one** webhook endpoint `https://<site>/stripe_webhook.ashx` with **"Listen to events on Connected accounts"**
    ticked, for `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `charge.refunded` and
