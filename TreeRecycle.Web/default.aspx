@@ -35,7 +35,7 @@
             </ul>
         </asp:PlaceHolder>
 
-        <h2 class="mt">Or browse by area</h2>
+        <h2 class="mt">Or browse by area </h2>
         <div class="filters">
             <div class="field">
                 <label for="<%= ddlProvince.ClientID %>">Province</label>
