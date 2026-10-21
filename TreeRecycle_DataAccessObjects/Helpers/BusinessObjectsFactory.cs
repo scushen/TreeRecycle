@@ -17,12 +17,40 @@ namespace TreeRecycle.DataAccessObjects
     /// </summary>
     public class BusinessObjectsFactory
     {
+        private static readonly object InitLock = new object();
+
+        /// <summary>Why the last start-up attempt failed (shown by health.ashx), or null.</summary>
+        public static Exception StartupError { get; private set; }
+
+        /// <summary>Which of the sources in GetConnectionString supplied the connection string.</summary>
+        public static string ConnectionSource { get; private set; }
+
+        public static bool IsInitialized
+        {
+            get { return ActiveRecordMediator.GetSessionFactoryHolder() != null; }
+        }
+
         public void InitializeActiveRecord()
         {
-            if (ActiveRecordMediator.GetSessionFactoryHolder() == null)
+            if (IsInitialized)
+                return;
+            lock (InitLock)
             {
-                Assembly asm = typeof(BusinessObjectsFactory).Assembly;
-                ActiveRecordStarter.Initialize(asm, GetConfiguration());
+                if (IsInitialized)
+                    return;
+                try
+                {
+                    Assembly asm = typeof(BusinessObjectsFactory).Assembly;
+                    ActiveRecordStarter.Initialize(asm, GetConfiguration());
+                    StartupError = null;
+                }
+                catch (Exception ex)
+                {
+                    // Remember it and let the next request retry, rather than leaving the site dead until a restart.
+                    StartupError = ex;
+                    ActiveRecordStarter.ResetInitializationFlag();
+                    throw;
+                }
             }
         }
 
@@ -39,12 +67,18 @@ namespace TreeRecycle.DataAccessObjects
             {
                 string fromAzure = Environment.GetEnvironmentVariable(prefix + "dbConnection");
                 if (!string.IsNullOrWhiteSpace(fromAzure))
+                {
+                    ConnectionSource = "Azure connection string (" + prefix + "dbConnection)";
                     return fromAzure;
+                }
             }
 
             ConnectionStringSettings fromConfig = ConfigurationManager.ConnectionStrings["dbConnection"];
             if (fromConfig != null && !string.IsNullOrWhiteSpace(fromConfig.ConnectionString))
+            {
+                ConnectionSource = "Web.config";
                 return fromConfig.ConnectionString;
+            }
 
             string localFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "connectionStrings.config");
             if (File.Exists(localFile))
@@ -52,9 +86,13 @@ namespace TreeRecycle.DataAccessObjects
                 XElement entry = XDocument.Load(localFile).Descendants("add")
                     .FirstOrDefault(e => (string)e.Attribute("name") == "dbConnection");
                 if (entry != null && !string.IsNullOrWhiteSpace((string)entry.Attribute("connectionString")))
+                {
+                    ConnectionSource = "connectionStrings.config";
                     return (string)entry.Attribute("connectionString");
+                }
             }
 
+            ConnectionSource = "none found";
             throw new ConfigurationErrorsException("No dbConnection connection string. Set it in the Azure App Service configuration, "
                                                    + "or create connectionStrings.config from connectionStrings.example.config.");
         }
