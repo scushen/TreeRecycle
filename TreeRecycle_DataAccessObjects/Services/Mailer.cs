@@ -40,7 +40,7 @@ namespace TreeRecycle.DataAccessObjects
                     ["Subject"] = subject,
                     ["HtmlBody"] = html,
                     ["TextBody"] = text ?? string.Empty,
-                    ["MessageStream"] = "outbound",
+                    ["MessageStream"] = "treerecycle",
                 };
                 if (!string.IsNullOrWhiteSpace(replyTo))
                     payload["ReplyTo"] = replyTo;

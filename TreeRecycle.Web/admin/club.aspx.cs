@@ -63,6 +63,23 @@ namespace TreeRecycle.Web.Admin
             Row(act, "Our booking fees", Enc(c.Money(sales.Sum(o => o.PlatformFee))));
             litActivity.Text = act.ToString();
             lnkPublic.NavigateUrl = "~/c/" + c.Slug;
+            lnkPublicUrl.NavigateUrl = "~/c/" + c.Slug;
+            lnkPublicUrl.Text = c.PublicUrl;
+
+            var emails = EmailLog.ForClub(c.ClubId, 15);
+            if (emails.Count == 0)
+                litEmails.Text = "<p class=\"muted mb0\">No emails sent to this club yet.</p>";
+            else
+            {
+                var em = new StringBuilder("<div class=\"tablewrap\"><table class=\"data\"><tr><th>When</th><th>To / subject</th><th>Result</th></tr>");
+                foreach (EmailLog log in emails)
+                    em.Append("<tr><td class=\"nowrap\">").Append(AdminDate(log.CreatedDate, "d MMM HH:mm"))
+                      .Append("</td><td>").Append(Enc(log.ToEmail)).Append("<div class=\"small muted\">").Append(Enc(log.Subject)).Append("</div></td><td>")
+                      .Append(log.Success ? "<span class=\"pill\">Sent</span>"
+                                          : "<span class=\"pill red\">Failed</span><div class=\"small\">" + Enc(log.ErrorSummary) + "</div>")
+                      .Append("</td></tr>");
+                litEmails.Text = em.Append("</table></div>").ToString();
+            }
 
             btnApprove.Visible = c.StatusEnum != ClubStatus.Approved;
             btnApprove.Text = c.StatusEnum == ClubStatus.Pending ? "Approve" : "Reinstate";
@@ -85,13 +102,26 @@ namespace TreeRecycle.Web.Admin
             _club.UpdatedBy = "ADM";
             _club.Update();
 
-            Mailer.SendSystem(_club.ContactEmail, first ? "You're verified - set up payments to go live" : "Your account has been reinstated",
+            bool sent = Mailer.SendSystem(_club.ContactEmail, first ? "You're verified - set up payments to go live" : "Your account has been reinstated",
                 "Hi " + _club.ContactName + ",\n\n" + _club.ClubName + " is now verified on " + Settings.SiteName + ".\n\n"
                 + "To start taking bookings:\n1. Connect your Stripe account (Payments page)\n2. Check your prices and collection dates\n3. Switch on 'Accepting orders' (Club details page)\n\n"
                 + "Log in: " + AbsoluteUrl("~/login.aspx") + "\n\nYour booking page will be: " + _club.PublicUrl + "\n\nThanks,\n" + Settings.SiteName, _club.ClubId);
 
-            litMsg.Text = "<div class=\"msg ok\">Approved and emailed.</div>";
+            ShowOutcome(first ? "Approved" : "Reinstated", sent);
             Bind();
+        }
+
+        /// <summary>Says plainly whether the club was told; a failed email used to be reported as sent.</summary>
+        private void ShowOutcome(string action, bool emailSent)
+        {
+            if (emailSent)
+            {
+                litMsg.Text = "<div class=\"msg ok\">" + Enc(action) + " and emailed to " + Enc(_club.ContactEmail) + ".</div>";
+                return;
+            }
+            EmailLog last = EmailLog.ForClub(_club.ClubId, 1).FirstOrDefault();
+            litMsg.Text = "<div class=\"msg warn\"><strong>" + Enc(action) + ", but the email to " + Enc(_club.ContactEmail) + " failed.</strong> "
+                          + Enc(last == null ? "" : last.ErrorSummary) + " Let the club know another way, or fix the email settings and try again.</div>";
         }
 
         protected void btnReject_Click(object sender, EventArgs e)
@@ -113,10 +143,10 @@ namespace TreeRecycle.Web.Admin
             _club.StatusReason = reason;
             _club.UpdatedBy = "ADM";
             _club.Update();
-            Mailer.SendSystem(_club.ContactEmail, subject,
+            bool sent = Mailer.SendSystem(_club.ContactEmail, subject,
                 "Hi " + _club.ContactName + ",\n\nSorry - " + sentence + (reason == "" ? "" : "\n\nReason: " + reason)
                 + "\n\nIf you think this is a mistake, just reply to this email.\n\n" + Settings.SiteName, _club.ClubId);
-            litMsg.Text = "<div class=\"msg ok\">" + status + " and emailed.</div>";
+            ShowOutcome(status.ToString(), sent);
             Bind();
         }
 

@@ -35,7 +35,13 @@
                 <table class="data">
                     <asp:Literal ID="litActivity" runat="server" />
                 </table>
-                <p class="mt"><asp:HyperLink ID="lnkPublic" runat="server" Target="_blank" CssClass="btn light small">Open booking page</asp:HyperLink></p>
+                <p class="mt small">Booking page: <asp:HyperLink ID="lnkPublicUrl" runat="server" Target="_blank" /></p>
+                <p><asp:HyperLink ID="lnkPublic" runat="server" Target="_blank" CssClass="btn light small">Open booking page</asp:HyperLink></p>
+                <p class="small muted">Admins can preview the page even before the club is approved or live. Payment is switched off in preview.</p>
+            </div>
+            <div class="card">
+                <h2>Emails sent</h2>
+                <asp:Literal ID="litEmails" runat="server" />
             </div>
             <div class="card">
                 <h2>Private notes</h2>

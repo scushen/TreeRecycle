@@ -59,6 +59,16 @@ namespace TreeRecycle.Web
             }
 
             sb.AppendLine("Postcode lookups since start: " + Geo.GeocodeGoogleCalls + " billed by Google, " + Geo.GeocodeCacheHits + " answered from cache");
+            try
+            {
+                EmailLog last = EmailLog.Latest();
+                sb.AppendLine("Last email: " + (last == null ? "none sent yet"
+                    : (last.Success ? "sent OK" : "FAILED - " + last.ErrorSummary) + " (" + last.CreatedDate.ToString("yyyy-MM-dd HH:mm") + " UTC)"));
+            }
+            catch (Exception)
+            {
+                sb.AppendLine("Last email: unknown (database not reachable)");
+            }
 
             sb.AppendLine();
             sb.AppendLine("SiteUrl: " + Settings.SiteUrl);

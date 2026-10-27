@@ -39,11 +39,17 @@ namespace TreeRecycle.Web
             get { return Session[ClubPage.SessionKey] is int && (int)Session[ClubPage.SessionKey] == _club.ClubId; }
         }
 
+        /// <summary>The platform admin can preview any club's page (pending, suspended, not live), but never pay.</summary>
+        private bool IsAdminPreview
+        {
+            get { return AdminAuth.IsSignedIn(Session); }
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             string slug = Page.RouteData.Values["slug"] as string ?? Q("slug");
             _club = Club.FindBySlug(slug);
-            if (_club == null || (_club.StatusEnum != ClubStatus.Approved && !(Session[ClubPage.SessionKey] is int && (int)Session[ClubPage.SessionKey] == _club.ClubId)))
+            if (_club == null || (_club.StatusEnum != ClubStatus.Approved && !IsOwnerPreview && !IsAdminPreview))
             {
                 Response.StatusCode = 404;
                 phClub.Visible = false;
@@ -100,10 +106,17 @@ namespace TreeRecycle.Web
             if (blockers.Count > 0)
             {
                 btnPay.Enabled = false;
-                litClosed.Text = IsOwnerPreview
-                    ? "<div class=\"msg warn\"><strong>Preview.</strong> This is how your page will look. It isn't live yet:<ul>"
-                      + string.Concat(blockers.Select(b => "<li>" + Enc(b) + "</li>")) + "</ul></div>"
-                    : "<div class=\"msg warn\">" + Enc(_club.ClubName) + " isn't taking bookings at the moment.</div>";
+                string list = "<ul>" + string.Concat(blockers.Select(b => "<li>" + Enc(b) + "</li>")) + "</ul>";
+                if (IsOwnerPreview)
+                    litClosed.Text = "<div class=\"msg warn\"><strong>Preview.</strong> This is how your page will look. It isn't live yet:" + list + "</div>";
+                else if (IsAdminPreview)
+                    litClosed.Text = "<div class=\"msg warn\"><strong>Admin preview.</strong> The public can't see or book on this page yet. Not live because:" + list + "</div>";
+                else
+                    litClosed.Text = "<div class=\"msg warn\">" + Enc(_club.ClubName) + " isn't taking bookings at the moment.</div>";
+            }
+            else if (IsAdminPreview)
+            {
+                litClosed.Text = "<div class=\"msg ok\"><strong>Admin view.</strong> This page is live and taking bookings.</div>";
             }
         }
 

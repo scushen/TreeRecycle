@@ -35,7 +35,8 @@
                             <td><%# Item.Club.StripeChargesEnabled ? "<span class=\"pill\">Ready</span>" : (Item.Club.StripeAccountId != "" ? "<span class=\"pill gold\">Started</span>" : "<span class=\"pill grey\">No</span>") %></td>
                             <td class="num"><%# Item.Trees %></td>
                             <td class="num"><%#: Item.Fees %></td>
-                            <td><a class="btn small" href="club.aspx?id=<%# Item.Club.ClubId %>"><%# Item.Club.StatusEnum == TreeRecycle.DataAccessObjects.ClubStatus.Pending ? "Review" : "Open" %></a></td>
+                            <td class="actions"><a class="btn small" href="club.aspx?id=<%# Item.Club.ClubId %>"><%# Item.Club.StatusEnum == TreeRecycle.DataAccessObjects.ClubStatus.Pending ? "Review" : "Open" %></a>
+                                <a class="btn small light" href="<%#: ResolveUrl("~/c/" + Item.Club.Slug) %>" target="_blank">Booking page</a></td>
                         </tr>
                     </ItemTemplate>
                 </asp:Repeater>

@@ -26,7 +26,11 @@ namespace TreeRecycle.Web.Admin {
 
         protected global::System.Web.UI.WebControls.Literal litActivity;
 
+        protected global::System.Web.UI.WebControls.HyperLink lnkPublicUrl;
+
         protected global::System.Web.UI.WebControls.HyperLink lnkPublic;
+
+        protected global::System.Web.UI.WebControls.Literal litEmails;
 
         protected global::System.Web.UI.WebControls.TextBox txtNotes;
 
