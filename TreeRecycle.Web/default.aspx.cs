@@ -11,6 +11,9 @@ namespace TreeRecycle.Web
     {
         private const string CountryCookie = "tr_country";
 
+        /// <summary>
+        /// 
+        /// </summary>
         protected string PostcodeHintsJson
         {
             get
@@ -20,6 +23,11 @@ namespace TreeRecycle.Web
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
