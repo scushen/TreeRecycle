@@ -20,7 +20,17 @@ namespace TreeRecycle.Web
 
         protected string FeePerTreeJs
         {
-            get { return Settings.PlatformFeePerTree.ToString(CultureInfo.InvariantCulture); }
+            get { return _club == null ? "0" : _club.Country.BookingFee.ToString(CultureInfo.InvariantCulture); }
+        }
+
+        protected string CurrencySymbolJs
+        {
+            get { return Newtonsoft.Json.JsonConvert.SerializeObject(_club == null ? "" : _club.Country.CurrencySymbol); }
+        }
+
+        protected string PriceText(decimal price)
+        {
+            return _club.Money(price);
         }
 
         /// <summary>The club's own login can preview its page before it goes live, but not pay.</summary>
@@ -51,9 +61,14 @@ namespace TreeRecycle.Web
             Title = "Christmas tree collection - " + _club.ClubName;
             litMeta.Text = "<meta name=\"description\" content=\"" + Enc("Book " + _club.ClubName + " to collect your Christmas tree. Support the club and skip the mess.") + "\" />";
             litClubName.Text = Enc(_club.ClubName) + " Christmas tree collection";
-            litPlace.Text = Enc((_club.Town == "" ? "" : _club.Town + ", ") + "Co. " + _club.County) + " &middot; every booking supports the club";
+            CountryInfo country = _club.Country;
+            string region = _club.Region == "" ? "" : (country.Code == "IE" ? "Co. " + _club.Region : _club.Region);
+            litPlace.Text = Enc(string.Join(", ", new[] { _club.Town, region, country.Name }.Where(s => s != ""))) + " &middot; every booking supports the club";
             litPayee.Text = Enc(_club.ClubName);
-            litRadius.Text = _club.CollectionRadiusKm.ToString(CultureInfo.InvariantCulture);
+            litRadius.Text = _club.RadiusInDisplayUnits + " " + country.DistanceUnit;
+            litPostcodeLabel.Text = Enc(char.ToUpperInvariant(country.PostcodeName[0]) + country.PostcodeName.Substring(1));
+            litPostcodeHint.Text = Enc("We use your " + country.PostcodeName + " and address to check you're in the club's collection area and to plan the route.");
+            txtPostcode.Attributes["placeholder"] = "e.g. " + country.PostcodeExample;
             litDescription.Text = Paragraphs(_club.PublicDescription);
             litCollectionInfo.Text = Paragraphs(_club.CollectionInfo);
             litContact.Text = Enc(_club.ContactName) + "<br />" +
@@ -77,7 +92,8 @@ namespace TreeRecycle.Web
                     }
                     ddlDate.Items.Add(item);
                 }
-                txtEircode.Text = Geo.NormaliseEircode(Q("eircode"));
+                // ?postcode= from the home-page search (?eircode= on links shared before the site went international).
+                txtPostcode.Text = country.NormalisePostcode(Q("postcode") != "" ? Q("postcode") : Q("eircode"));
             }
 
             IList<string> blockers = _club.OrderBlockers();
@@ -113,9 +129,10 @@ namespace TreeRecycle.Web
             else if (date.IsFull(qty))
                 errors.Add("Sorry, " + date.DisplayName + " is fully booked.");
 
-            string eircode = Geo.NormaliseEircode(txtEircode.Text);
-            if (eircode == string.Empty)
-                errors.Add("Enter a valid Eircode, like A65 F4E2.");
+            CountryInfo country = _club.Country;
+            string postcode = country.NormalisePostcode(txtPostcode.Text);
+            if (postcode == string.Empty)
+                errors.Add("Enter a valid " + country.PostcodeName + ", like " + country.PostcodeExample + ".");
             string name = Clean(txtName.Text, 100), email = Clean(txtEmail.Text, 200).ToLowerInvariant(), phone = Clean(txtPhone.Text, 30);
             if (name == "") errors.Add("Enter your name.");
             if (!LooksLikeEmail(email)) errors.Add("Enter a valid email address.");
@@ -125,18 +142,17 @@ namespace TreeRecycle.Web
             if (!chkTerms.Checked) errors.Add("Please tick to confirm you'll have the tree out on the day.");
 
             GeoPoint point = null;
-            if (eircode != string.Empty && errors.Count == 0)
+            if (postcode != string.Empty && errors.Count == 0)
             {
-                try { point = Geo.Geocode(eircode); }
+                try { point = Geo.GeocodeAddress(Clean(txtAddress1.Text, 150), Clean(txtTown.Text, 100), postcode, country.Code); }
                 catch (Exception ex) { System.Diagnostics.Trace.TraceError("Geocode failed: " + ex); }
                 if (point == null)
-                    errors.Add("We couldn't find " + eircode + " on the map. Please check your Eircode.");
+                    errors.Add("We couldn't find " + postcode + " on the map. Please check your " + country.PostcodeName + ".");
                 else if (!_club.Covers(point.Latitude, point.Longitude))
                 {
-                    double km = _club.DistanceKmTo(point.Latitude, point.Longitude);
-                    errors.Add(string.Format(CultureInfo.InvariantCulture,
-                        "Sorry, {0} is {1:0.0} km from {2}, outside their {3} km collection area. Search your Eircode on our home page to find a club that covers you.",
-                        eircode, km, _club.ClubName, _club.CollectionRadiusKm));
+                    errors.Add("Sorry, " + postcode + " is " + country.Distance(_club.DistanceKmTo(point.Latitude, point.Longitude)) + " from "
+                               + _club.ClubName + ", outside their " + _club.RadiusInDisplayUnits + " " + country.DistanceUnit
+                               + " collection area. Search your " + country.PostcodeName + " on our home page to find a club that covers you.");
                 }
             }
 
@@ -146,7 +162,7 @@ namespace TreeRecycle.Web
                 return;
             }
 
-            decimal fee = Settings.PlatformFeePerTree;
+            decimal fee = country.BookingFee;
             var order = new TreeOrder
             {
                 OrderRef = TreeOrder.NewOrderRef(),
@@ -160,15 +176,16 @@ namespace TreeRecycle.Web
                 ClubAmount = price.Price * qty,
                 PlatformFee = fee * qty,
                 TotalAmount = (price.Price + fee) * qty,
-                Currency = "eur",
+                Currency = country.Currency,
+                CountryCode = country.Code,
                 CustomerName = name,
                 CustomerEmail = email,
                 CustomerPhone = phone,
                 AddressLine1 = Clean(txtAddress1.Text, 150),
                 AddressLine2 = Clean(txtAddress2.Text, 150),
                 Town = Clean(txtTown.Text, 100),
-                County = point.County,
-                Eircode = eircode,
+                Region = point.Region,
+                Postcode = postcode,
                 Latitude = point.Latitude,
                 Longitude = point.Longitude,
                 DistanceKm = Math.Round((decimal)_club.DistanceKmTo(point.Latitude, point.Longitude), 2),
@@ -180,7 +197,7 @@ namespace TreeRecycle.Web
             order.Create();
 
             string success = Settings.SiteUrl + VirtualPathUtility.ToAbsolute("~/order_complete.aspx") + "?ref=" + order.OrderRef + "&session_id={CHECKOUT_SESSION_ID}";
-            string cancel = _club.PublicUrl + "?eircode=" + HttpUtility.UrlEncode(eircode);
+            string cancel = _club.PublicUrl + "?postcode=" + HttpUtility.UrlEncode(postcode);
             string checkoutUrl;
             try
             {

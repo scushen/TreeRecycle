@@ -56,9 +56,13 @@ namespace TreeRecycle.DataAccessObjects
         {
             get
             {
-                return string.Join(", ", new[] { AddressLine1, AddressLine2, Town, Eircode }.Where(s => !string.IsNullOrWhiteSpace(s)));
+                return string.Join(", ", new[] { AddressLine1, AddressLine2, Town, Postcode }.Where(s => !string.IsNullOrWhiteSpace(s)));
             }
         }
+
+        public CountryInfo Country { get { return Countries.Get(CountryCode); } }
+
+        public string Money(decimal amount) { return Country.Money(amount); }
 
         public string MapsLink { get { return Geo.GoogleMapsLink(Latitude, Longitude); } }
 

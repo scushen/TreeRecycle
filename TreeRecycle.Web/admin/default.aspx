@@ -28,7 +28,7 @@
                 <asp:Repeater ID="rptClubs" runat="server" ItemType="TreeRecycle.Web.Admin.ClubRow">
                     <ItemTemplate>
                         <tr>
-                            <td><strong><%#: Item.Club.ClubName %></strong><div class="small muted"><%#: Item.Club.ClubType %> &middot; <%#: Item.Club.Town %>, Co. <%#: Item.Club.County %></div></td>
+                            <td><strong><%#: Item.Club.ClubName %></strong><div class="small muted"><%#: Item.Club.ClubType %> &middot; <%#: Item.Club.Town %>, <%#: Item.Club.Region %>, <%#: Item.Club.Country.Name %></div></td>
                             <td><%#: Item.Club.ContactName %><div class="small"><%#: Item.Club.ContactPhone %></div><div class="small muted"><%#: Item.Club.ContactEmail %></div></td>
                             <td class="nowrap"><%#: Item.Registered %></td>
                             <td><span class="pill <%# Item.StatusClass %>"><%#: Item.Club.StatusEnum %></span></td>

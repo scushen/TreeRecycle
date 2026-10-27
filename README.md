@@ -26,6 +26,40 @@ and Postmark.
 IDENTITY PKs: every generated DAO already has `[PrimaryKey(PrimaryKeyType.Identity, ...)]`, so no hand edit is needed.
 If you regenerate with MyGeneration instead of `gen_entities.py`, swap PKIDGen for Identity as usual.
 
+## Countries (Ireland, UK, Australia, New Zealand, US)
+
+One site serves every country. `TreeRecycle_DataAccessObjects\Helpers\Countries.cs` holds each country's currency,
+booking fee, postcode name and format, region list, distance unit and time zones. Add a country there and the
+whole site follows.
+
+| | Ireland | UK | Australia | New Zealand | US |
+|---|---|---|---|---|---|
+| Currency / default booking fee | EUR / €2 | GBP / £2 | AUD / A$3 | NZD / NZ$3 | USD / US$2 |
+| Postcode | Eircode | postcode | postcode | postcode | ZIP code |
+| Region list | 26 counties | free text | 8 states/territories | 16 regions | 50 states + DC |
+| Distance | km | miles | km | km | miles |
+
+- **Clubs** pick their country at registration. It sets their currency, their Stripe account country and their
+  time zone (AU and US clubs pick one of several). A club can't change country itself, because its currency and
+  Stripe account depend on it.
+- **Booking fees** default as above. Override any of them with an app setting: `PlatformFeePerTree_EUR`, `_GBP`,
+  `_AUD`, `_NZD`, `_USD`. The old `PlatformFeePerTree` still works for EUR.
+- **Customers** choose a country on the home page. It defaults to the domain (.ie / .co.uk / .com.au / .co.nz),
+  then the visitor's last choice, then Ireland. `?country=GB` on any home or registration link preselects it.
+- **Geocoding:** an Eircode pinpoints one address, so Irish orders are plotted from the Eircode alone. Other
+  countries' postcodes cover a street or district, so orders and club addresses there are geocoded from the full
+  address, falling back to the postcode.
+- **Distances** are stored in km everywhere (`collection_radius_km`, `distance_km`) and only shown in miles.
+- **Times** are stored in UTC and shown in the club's time zone (the admin pages use Irish time). Collection dates
+  are local calendar dates.
+- **Stripe:** every club gets a Standard account in its own country, and is charged in its own currency. Check in the
+  Stripe dashboard that your Irish platform account can onboard connected accounts in each country before
+  launching there.
+
+**Existing databases:** a database created before this change needs `SQL\02_international_upgrade.sql` run once.
+It renames county/eircode to region/postcode and adds country_code and time_zone. It's safe to re-run. New databases
+only need `01_create_tables.sql`.
+
 ## How the money works
 
 Each club connects a **Standard** Stripe account (its own dashboard, its own ID checks; it is the merchant of record).

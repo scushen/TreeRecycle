@@ -30,6 +30,20 @@ namespace TreeRecycle.Web
             }
         }
 
+        /// <summary>An amount in the club's currency, e.g. "£15.00".</summary>
+        protected string Money(decimal amount)
+        {
+            return CurrentClub.Money(amount);
+        }
+
+        /// <summary>A UTC time shown in the club's own time zone.</summary>
+        protected string LocalDate(DateTime? utc, string format)
+        {
+            return utc.HasValue ? CurrentClub.ToLocal(utc.Value).ToString(format) : "";
+        }
+
+        protected CountryInfo Country { get { return CurrentClub.Country; } }
+
         public static void SignIn(System.Web.SessionState.HttpSessionState session, Club club)
         {
             session[SessionKey] = club.ClubId;

@@ -14,6 +14,10 @@ namespace TreeRecycle.Web {
 
         protected global::System.Web.UI.WebControls.Literal litError;
 
+        protected global::System.Web.UI.WebControls.DropDownList ddlCountry;
+
+        protected global::System.Web.UI.WebControls.Literal litCurrency;
+
         protected global::System.Web.UI.WebControls.TextBox txtClubName;
 
         protected global::System.Web.UI.WebControls.DropDownList ddlType;
@@ -28,9 +32,21 @@ namespace TreeRecycle.Web {
 
         protected global::System.Web.UI.WebControls.TextBox txtTown;
 
-        protected global::System.Web.UI.WebControls.DropDownList ddlCounty;
+        protected global::System.Web.UI.WebControls.Literal litRegionLabel;
 
-        protected global::System.Web.UI.WebControls.TextBox txtEircode;
+        protected global::System.Web.UI.WebControls.DropDownList ddlRegion;
+
+        protected global::System.Web.UI.WebControls.TextBox txtRegion;
+
+        protected global::System.Web.UI.WebControls.Literal litPostcodeLabel;
+
+        protected global::System.Web.UI.WebControls.TextBox txtPostcode;
+
+        protected global::System.Web.UI.WebControls.Literal litPostcodeHint;
+
+        protected global::System.Web.UI.WebControls.PlaceHolder phTimeZone;
+
+        protected global::System.Web.UI.WebControls.DropDownList ddlTimeZone;
 
         protected global::System.Web.UI.WebControls.TextBox txtContactName;
 

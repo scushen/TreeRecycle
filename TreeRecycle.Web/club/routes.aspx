@@ -34,14 +34,14 @@
                 </div>
                 <div class="tablewrap mt">
                     <table class="data">
-                        <tr><th>#</th><th>Customer</th><th>Address</th><th>Eircode</th><th>Tree</th><th>Notes</th><th>Status</th><th>Done</th></tr>
+                        <tr><th>#</th><th>Customer</th><th>Address</th><th>Postcode</th><th>Tree</th><th>Notes</th><th>Status</th><th>Done</th></tr>
                         <asp:Repeater runat="server" DataSource="<%# Item.Orders %>" ItemType="TreeRecycle.DataAccessObjects.TreeOrder">
                             <ItemTemplate>
                                 <tr>
                                     <td><strong><%# Item.RunSequence %></strong></td>
                                     <td><%#: Item.CustomerName %><div class="small"><%#: Item.CustomerPhone %></div></td>
                                     <td><a href="<%#: Item.MapsLink %>" target="_blank" rel="noopener"><%#: Item.AddressLine1 %></a><%#: Item.AddressLine2 == "" ? "" : ", " + Item.AddressLine2 %>, <%#: Item.Town %></td>
-                                    <td class="nowrap"><%#: Item.Eircode %></td>
+                                    <td class="nowrap"><%#: Item.Postcode %></td>
                                     <td class="nowrap"><%#: Item.Quantity + " x " + Item.SizeLabel %></td>
                                     <td class="small"><%#: Item.LocationNotes %></td>
                                     <td><%#: Item.StatusText %></td>

@@ -28,7 +28,7 @@ namespace TreeRecycle.DataAccessObjects
         public static readonly string[] Tokens =
         {
             "{{customer_name}}", "{{order_ref}}", "{{club_name}}", "{{tree_size}}", "{{quantity}}", "{{amount_paid}}",
-            "{{collection_date}}", "{{address}}", "{{eircode}}", "{{club_phone}}", "{{club_email}}", "{{collection_info}}",
+            "{{collection_date}}", "{{address}}", "{{postcode}}", "{{eircode}}", "{{club_phone}}", "{{club_email}}", "{{collection_info}}",
         };
 
         /// <summary>The club's saved template, or the built-in default if they haven't edited it yet.</summary>
@@ -100,10 +100,11 @@ Thanks for supporting {{club_name}}!";
                 { "{{club_name}}", club.ClubName },
                 { "{{tree_size}}", order.SizeLabel },
                 { "{{quantity}}", order.Quantity.ToString(CultureInfo.InvariantCulture) },
-                { "{{amount_paid}}", Settings.Money(order.TotalAmount) },
+                { "{{amount_paid}}", order.Money(order.TotalAmount) },
                 { "{{collection_date}}", date == null ? "to be confirmed" : date.DisplayName },
                 { "{{address}}", order.FullAddress },
-                { "{{eircode}}", order.Eircode },
+                { "{{postcode}}", order.Postcode },
+                { "{{eircode}}", order.Postcode }, // pre-international templates
                 { "{{club_phone}}", club.ContactPhone },
                 { "{{club_email}}", club.ContactEmail },
                 { "{{collection_info}}", club.CollectionInfo },

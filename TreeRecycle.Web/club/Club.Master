@@ -8,7 +8,7 @@
     <title><%: Page.Title %> - <%: ClubName %></title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="<%: ResolveUrl("~/css/site.css") %>?id=2" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/css/site.css") %>?id=3" />
     <asp:ContentPlaceHolder ID="HeadContent" runat="server" />
 </head>
 <body>

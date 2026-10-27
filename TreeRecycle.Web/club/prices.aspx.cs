@@ -9,14 +9,14 @@ namespace TreeRecycle.Web.ClubArea
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            litFee.Text = Money(Settings.PlatformFeePerTree);
+            litFee.Text = Money(Country.BookingFee);
             if (!IsPostBack)
                 Bind();
         }
 
         protected string CustomerPays(decimal price)
         {
-            return Money(price + Settings.PlatformFeePerTree);
+            return Money(price + Country.BookingFee);
         }
 
         private void Bind()
@@ -40,7 +40,7 @@ namespace TreeRecycle.Web.ClubArea
                 if (label == "" || !int.TryParse(((TextBox)item.FindControl("txtFeet")).Text, out feet)
                     || !TryMoney(((TextBox)item.FindControl("txtPrice")).Text, out price) || price < 1 || price > 500)
                 {
-                    litMsg.Text = "<div class=\"msg err\">Each size needs a label, a size in feet and a price between €1 and €500.</div>";
+                    litMsg.Text = "<div class=\"msg err\">Each size needs a label, a size in feet and a price between " + Money(1) + " and " + Money(500) + ".</div>";
                     return;
                 }
                 int.TryParse(((TextBox)item.FindControl("txtSort")).Text, out sort);
@@ -63,7 +63,7 @@ namespace TreeRecycle.Web.ClubArea
             decimal price;
             if (label == "" || !int.TryParse(txtNewFeet.Text, out feet) || !TryMoney(txtNewPrice.Text, out price) || price < 1 || price > 500)
             {
-                litMsg.Text = "<div class=\"msg err\">Enter a label, a size in feet and a price between €1 and €500.</div>";
+                litMsg.Text = "<div class=\"msg err\">Enter a label, a size in feet and a price between " + Money(1) + " and " + Money(500) + ".</div>";
                 return;
             }
             int nextSort = ClubPrice.ForClub(CurrentClub.ClubId, false).Select(p => p.SortOrder).DefaultIfEmpty(0).Max() + 1;

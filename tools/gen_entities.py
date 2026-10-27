@@ -34,8 +34,9 @@ ADDRESS = [
     ("address_line1", "nvarchar(150)", "''"),
     ("address_line2", "nvarchar(150)", "''"),
     ("town", "nvarchar(100)", "''"),
-    ("county", "nvarchar(50)", "''"),
-    ("eircode", "varchar(10)", "''"),
+    ("region", "nvarchar(100)", "''"),
+    ("postcode", "varchar(12)", "''"),
+    ("country_code", "varchar(2)", "'IE'"),
     ("latitude", "decimal(9,6)", "0"),
     ("longitude", "decimal(9,6)", "0"),
 ]
@@ -52,6 +53,7 @@ TABLES = [
         ("contact_phone", "nvarchar(30)", "''"),
         *ADDRESS,
         ("geocoded", "bit", "0"),
+        ("time_zone", "varchar(50)", "'GMT Standard Time'"),
         ("collection_radius_km", "int", "20"),
         ("public_description", "nvarchar(2000)", "''"),
         ("collection_info", "nvarchar(2000)", "''"),
@@ -74,7 +76,7 @@ TABLES = [
         "CREATE UNIQUE NONCLUSTERED INDEX UQ_club_tbl_Slug ON dbo.club_tbl (slug);",
         "CREATE UNIQUE NONCLUSTERED INDEX UQ_club_tbl_ContactEmail ON dbo.club_tbl (contact_email);",
         "CREATE NONCLUSTERED INDEX IX_club_tbl_StripeAccountId ON dbo.club_tbl (stripe_account_id);",
-        "CREATE NONCLUSTERED INDEX IX_club_tbl_StatusCounty ON dbo.club_tbl (status, county);",
+        "CREATE NONCLUSTERED INDEX IX_club_tbl_StatusCountryRegion ON dbo.club_tbl (status, country_code, region);",
     ]),
     ("ClubPrice", "club_price_tbl", [
         ("club_id", "int", "0"),

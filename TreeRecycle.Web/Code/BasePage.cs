@@ -37,14 +37,10 @@ namespace TreeRecycle.Web
             return HttpUtility.HtmlEncode(Convert.ToString(value, CultureInfo.InvariantCulture));
         }
 
-        protected static string Money(decimal amount)
+        /// <summary>A UTC time shown in the admin's (Irish) time. Club pages use ClubPage.LocalDate instead.</summary>
+        protected static string AdminDate(DateTime? utc, string format)
         {
-            return Settings.Money(amount);
-        }
-
-        protected static string IrishDate(DateTime? utc, string format)
-        {
-            return utc.HasValue ? Settings.ToIrish(utc.Value).ToString(format) : "";
+            return utc.HasValue ? Settings.ToLocal(utc.Value, Settings.AdminTimeZone).ToString(format) : "";
         }
 
         protected static string Clean(string value, int maxLength)
@@ -60,7 +56,9 @@ namespace TreeRecycle.Web
 
         protected static bool TryMoney(string text, out decimal amount)
         {
-            return decimal.TryParse((text ?? "").Replace("€", "").Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out amount) && amount >= 0;
+            // Accept "15", "15.00", "€15", "£15", "A$15"...
+            string number = System.Text.RegularExpressions.Regex.Replace(text ?? "", @"[^\d.,-]", "");
+            return decimal.TryParse(number, NumberStyles.Number, CultureInfo.InvariantCulture, out amount) && amount >= 0;
         }
 
         /// <summary>Redirect without the ThreadAbortException that Response.Redirect(url) throws.</summary>

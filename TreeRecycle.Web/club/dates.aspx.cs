@@ -34,8 +34,8 @@ namespace TreeRecycle.Web.ClubArea
                 {
                     Date = d,
                     Booked = dayOrders.Sum(o => o.Quantity),
-                    ToRemind = d.CollectionDate.Date >= Settings.TodayIrish ? toRemind : 0,
-                    ReminderText = reminded == 0 ? "Not sent" : reminded + " sent" + (d.ReminderSentDate.HasValue ? ", last " + IrishDate(d.ReminderSentDate, "d MMM HH:mm") : ""),
+                    ToRemind = d.CollectionDate.Date >= CurrentClub.Today ? toRemind : 0,
+                    ReminderText = reminded == 0 ? "Not sent" : reminded + " sent" + (d.ReminderSentDate.HasValue ? ", last " + LocalDate(d.ReminderSentDate, "d MMM HH:mm") : ""),
                 };
             }).ToList();
             rptDates.DataSource = rows;
@@ -91,7 +91,7 @@ namespace TreeRecycle.Web.ClubArea
                 litMsg.Text = "<div class=\"msg err\">Pick a date.</div>";
                 return;
             }
-            if (date < Settings.TodayIrish)
+            if (date < CurrentClub.Today)
             {
                 litMsg.Text = "<div class=\"msg err\">That date has passed.</div>";
                 return;

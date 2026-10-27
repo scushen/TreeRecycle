@@ -15,9 +15,9 @@
             </div>
             <div class="row2">
                 <div class="field">
-                    <label for="<%= txtRadius.ClientID %>">Collection radius (km)</label>
+                    <label for="<%= txtRadius.ClientID %>">Collection radius (<asp:Literal ID="litRadiusUnit" runat="server" />)</label>
                     <asp:TextBox ID="txtRadius" runat="server" TextMode="Number" min="1" max="100" />
-                    <div class="hint">Straight-line distance from your club's Eircode.</div>
+                    <div class="hint">Straight-line distance from your club's address.</div>
                 </div>
                 <div class="field">
                     <label for="<%= txtCapacity.ClientID %>">Trees per trailer load</label>
@@ -68,15 +68,29 @@
                     <asp:TextBox ID="txtTown" runat="server" MaxLength="100" />
                 </div>
                 <div class="field">
-                    <label for="<%= ddlCounty.ClientID %>">County</label>
-                    <asp:DropDownList ID="ddlCounty" runat="server" />
+                    <label for="<%= RegionInputId %>"><asp:Literal ID="litRegionLabel" runat="server" /></label>
+                    <asp:DropDownList ID="ddlRegion" runat="server" />
+                    <asp:TextBox ID="txtRegion" runat="server" MaxLength="100" />
                 </div>
                 <div class="field">
-                    <label for="<%= txtEircode.ClientID %>">Eircode</label>
-                    <asp:TextBox ID="txtEircode" runat="server" MaxLength="10" style="text-transform:uppercase" />
+                    <label for="<%= txtPostcode.ClientID %>"><asp:Literal ID="litPostcodeLabel" runat="server" /></label>
+                    <asp:TextBox ID="txtPostcode" runat="server" MaxLength="12" style="text-transform:uppercase" />
                 </div>
             </div>
             <p class="hint" style="margin-top:-8px"><asp:Literal ID="litGeo" runat="server" /></p>
+            <div class="row2">
+                <div class="field">
+                    <span class="label">Country</span>
+                    <div><asp:Literal ID="litCountry" runat="server" /></div>
+                    <div class="hint">Your country sets your currency and Stripe account. Contact us if it needs to change.</div>
+                </div>
+                <asp:PlaceHolder ID="phTimeZone" runat="server">
+                    <div class="field">
+                        <label for="<%= ddlTimeZone.ClientID %>">Time zone</label>
+                        <asp:DropDownList ID="ddlTimeZone" runat="server" />
+                    </div>
+                </asp:PlaceHolder>
+            </div>
 
             <h2 class="mt">Contact</h2>
             <div class="row2">

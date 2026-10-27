@@ -24,11 +24,13 @@ CREATE TABLE dbo.TreeRecycle_club_tbl (
     address_line1                NVARCHAR(150) NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_AddressLine1 DEFAULT (''),
     address_line2                NVARCHAR(150) NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_AddressLine2 DEFAULT (''),
     town                         NVARCHAR(100) NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_Town DEFAULT (''),
-    county                       NVARCHAR(50) NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_County DEFAULT (''),
-    eircode                      VARCHAR(10) NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_Eircode DEFAULT (''),
+    region                       NVARCHAR(100) NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_Region DEFAULT (''),
+    postcode                     VARCHAR(12) NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_Postcode DEFAULT (''),
+    country_code                 VARCHAR(2) NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_CountryCode DEFAULT ('IE'),
     latitude                     DECIMAL(9,6) NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_Latitude DEFAULT (0),
     longitude                    DECIMAL(9,6) NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_Longitude DEFAULT (0),
     geocoded                     BIT NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_Geocoded DEFAULT (0),
+    time_zone                    VARCHAR(50) NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_TimeZone DEFAULT ('GMT Standard Time'),
     collection_radius_km         INT NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_CollectionRadiusKm DEFAULT (20),
     public_description           NVARCHAR(2000) NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_PublicDescription DEFAULT (''),
     collection_info              NVARCHAR(2000) NOT NULL CONSTRAINT DF_TreeRecycle_club_tbl_CollectionInfo DEFAULT (''),
@@ -56,7 +58,7 @@ CREATE TABLE dbo.TreeRecycle_club_tbl (
 CREATE UNIQUE NONCLUSTERED INDEX UQ_TreeRecycle_club_tbl_Slug ON dbo.TreeRecycle_club_tbl (slug);
 CREATE UNIQUE NONCLUSTERED INDEX UQ_TreeRecycle_club_tbl_ContactEmail ON dbo.TreeRecycle_club_tbl (contact_email);
 CREATE NONCLUSTERED INDEX IX_TreeRecycle_club_tbl_StripeAccountId ON dbo.TreeRecycle_club_tbl (stripe_account_id);
-CREATE NONCLUSTERED INDEX IX_TreeRecycle_club_tbl_StatusCounty ON dbo.TreeRecycle_club_tbl (status, county);
+CREATE NONCLUSTERED INDEX IX_TreeRecycle_club_tbl_StatusCountryRegion ON dbo.TreeRecycle_club_tbl (status, country_code, region);
 END
 GO
 
@@ -126,8 +128,9 @@ CREATE TABLE dbo.TreeRecycle_tree_order_tbl (
     address_line1                NVARCHAR(150) NOT NULL CONSTRAINT DF_TreeRecycle_tree_order_tbl_AddressLine1 DEFAULT (''),
     address_line2                NVARCHAR(150) NOT NULL CONSTRAINT DF_TreeRecycle_tree_order_tbl_AddressLine2 DEFAULT (''),
     town                         NVARCHAR(100) NOT NULL CONSTRAINT DF_TreeRecycle_tree_order_tbl_Town DEFAULT (''),
-    county                       NVARCHAR(50) NOT NULL CONSTRAINT DF_TreeRecycle_tree_order_tbl_County DEFAULT (''),
-    eircode                      VARCHAR(10) NOT NULL CONSTRAINT DF_TreeRecycle_tree_order_tbl_Eircode DEFAULT (''),
+    region                       NVARCHAR(100) NOT NULL CONSTRAINT DF_TreeRecycle_tree_order_tbl_Region DEFAULT (''),
+    postcode                     VARCHAR(12) NOT NULL CONSTRAINT DF_TreeRecycle_tree_order_tbl_Postcode DEFAULT (''),
+    country_code                 VARCHAR(2) NOT NULL CONSTRAINT DF_TreeRecycle_tree_order_tbl_CountryCode DEFAULT ('IE'),
     latitude                     DECIMAL(9,6) NOT NULL CONSTRAINT DF_TreeRecycle_tree_order_tbl_Latitude DEFAULT (0),
     longitude                    DECIMAL(9,6) NOT NULL CONSTRAINT DF_TreeRecycle_tree_order_tbl_Longitude DEFAULT (0),
     distance_km                  DECIMAL(6,2) NOT NULL CONSTRAINT DF_TreeRecycle_tree_order_tbl_DistanceKm DEFAULT (0),

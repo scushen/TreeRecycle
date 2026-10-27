@@ -22,13 +22,13 @@
             <asp:DropDownList ID="ddlSort" runat="server" AutoPostBack="true" OnSelectedIndexChanged="Filter_Changed">
                 <asp:ListItem Value="route">Route (run, then stop)</asp:ListItem>
                 <asp:ListItem Value="distance">Distance from club</asp:ListItem>
-                <asp:ListItem Value="eircode">Eircode</asp:ListItem>
+                <asp:ListItem Value="postcode">Postcode</asp:ListItem>
                 <asp:ListItem Value="newest">Newest first</asp:ListItem>
             </asp:DropDownList>
         </div>
         <asp:Panel ID="pnlSearch" runat="server" DefaultButton="btnSearch" CssClass="field">
             <label for="<%= txtSearch.ClientID %>">Search</label>
-            <asp:TextBox ID="txtSearch" runat="server" placeholder="Name, ref, Eircode, phone" />
+            <asp:TextBox ID="txtSearch" runat="server" placeholder="Name, ref, postcode, phone" />
         </asp:Panel>
         <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn light" OnClick="Filter_Changed" />
         <asp:Button ID="btnCsv" runat="server" Text="Download CSV" CssClass="btn light" OnClick="btnCsv_Click" />
@@ -44,7 +44,7 @@
                             <td class="nowrap"><%# Item.RunNumber == 0 ? "-" : Item.RunNumber + "." + Item.RunSequence %></td>
                             <td class="nowrap"><%#: Item.OrderRef %></td>
                             <td><%#: Item.CustomerName %><div class="small"><a href="tel:<%#: Item.CustomerPhone.Replace(" ", "") %>"><%#: Item.CustomerPhone %></a></div><div class="small muted"><%#: Item.CustomerEmail %></div></td>
-                            <td><%#: Item.FullAddress %><div class="small"><a href="<%#: Item.MapsLink %>" target="_blank" rel="noopener">Map</a> &middot; <%# Item.DistanceKm.ToString("0.0") %> km</div><%# Item.LocationNotes == "" ? "" : "<div class=\"small muted\">" + Enc(Item.LocationNotes) + "</div>" %></td>
+                            <td><%#: Item.FullAddress %><div class="small"><a href="<%#: Item.MapsLink %>" target="_blank" rel="noopener">Map</a> &middot; <%#: Country.Distance((double)Item.DistanceKm) %></div><%# Item.LocationNotes == "" ? "" : "<div class=\"small muted\">" + Enc(Item.LocationNotes) + "</div>" %></td>
                             <td><%#: Item.Quantity + " x " + Item.SizeLabel %></td>
                             <td class="nowrap"><%#: DateName(Item.ClubCollectionDateId) %></td>
                             <td class="num"><%#: Money(Item.ClubAmount) %></td>

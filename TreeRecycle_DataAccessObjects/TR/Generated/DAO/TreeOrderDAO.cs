@@ -32,8 +32,9 @@ using System.Data;
  * 	 address_line1           | Type:nvarchar | Len:150   | Nullable:F | PK:F | FK:F
  * 	 address_line2           | Type:nvarchar | Len:150   | Nullable:F | PK:F | FK:F
  * 	 town                    | Type:nvarchar | Len:100   | Nullable:F | PK:F | FK:F
- * 	 county                  | Type:nvarchar | Len:50    | Nullable:F | PK:F | FK:F
- * 	 eircode                 | Type:varchar  | Len:10    | Nullable:F | PK:F | FK:F
+ * 	 region                  | Type:nvarchar | Len:100   | Nullable:F | PK:F | FK:F
+ * 	 postcode                | Type:varchar  | Len:12    | Nullable:F | PK:F | FK:F
+ * 	 country_code            | Type:varchar  | Len:2     | Nullable:F | PK:F | FK:F
  * 	 latitude                | Type:decimal  | Len:9     | Nullable:F | PK:F | FK:F
  * 	 longitude               | Type:decimal  | Len:9     | Nullable:F | PK:F | FK:F
  * 	 distance_km             | Type:decimal  | Len:6     | Nullable:F | PK:F | FK:F
@@ -85,8 +86,9 @@ namespace TreeRecycle.DataAccessObjects
 		private string _addressLine1; 
 		private string _addressLine2; 
 		private string _town; 
-		private string _county; 
-		private string _eircode; 
+		private string _region; 
+		private string _postcode; 
+		private string _countryCode; 
 		private decimal _latitude; 
 		private decimal _longitude; 
 		private decimal _distanceKm; 
@@ -132,8 +134,9 @@ namespace TreeRecycle.DataAccessObjects
 			_addressLine1 = String.Empty; 
 			_addressLine2 = String.Empty; 
 			_town = String.Empty; 
-			_county = String.Empty; 
-			_eircode = String.Empty; 
+			_region = String.Empty; 
+			_postcode = String.Empty; 
+			_countryCode = String.Empty; 
 			_latitude = 0m; 
 			_longitude = 0m; 
 			_distanceKm = 0m; 
@@ -362,21 +365,31 @@ namespace TreeRecycle.DataAccessObjects
 		/// <summary>
 		/// 
 		/// </summary>
-		[Property(Column="county", NotNull=true, Length=50)]
-		public virtual string County
+		[Property(Column="region", NotNull=true, Length=100)]
+		public virtual string Region
 		{
-			get { return _county; }
-			set { _county = value; }
+			get { return _region; }
+			set { _region = value; }
 		}
 
 		/// <summary>
 		/// 
 		/// </summary>
-		[Property(Column="eircode", NotNull=true, Length=10)]
-		public virtual string Eircode
+		[Property(Column="postcode", NotNull=true, Length=12)]
+		public virtual string Postcode
 		{
-			get { return _eircode; }
-			set { _eircode = value; }
+			get { return _postcode; }
+			set { _postcode = value; }
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		[Property(Column="country_code", NotNull=true, Length=2)]
+		public virtual string CountryCode
+		{
+			get { return _countryCode; }
+			set { _countryCode = value; }
 		}
 
 		/// <summary>
@@ -586,8 +599,9 @@ namespace TreeRecycle.DataAccessObjects
 			public const string AddressLine1 = "AddressLine1";
 			public const string AddressLine2 = "AddressLine2";
 			public const string Town = "Town";
-			public const string County = "County";
-			public const string Eircode = "Eircode";
+			public const string Region = "Region";
+			public const string Postcode = "Postcode";
+			public const string CountryCode = "CountryCode";
 			public const string Latitude = "Latitude";
 			public const string Longitude = "Longitude";
 			public const string DistanceKm = "DistanceKm";
@@ -652,8 +666,9 @@ namespace TreeRecycle.DataAccessObjects
 			sbuffer.AppendFormat("AddressLine1 = {0}, ",_addressLine1);
 			sbuffer.AppendFormat("AddressLine2 = {0}, ",_addressLine2);
 			sbuffer.AppendFormat("Town = {0}, ",_town);
-			sbuffer.AppendFormat("County = {0}, ",_county);
-			sbuffer.AppendFormat("Eircode = {0}, ",_eircode);
+			sbuffer.AppendFormat("Region = {0}, ",_region);
+			sbuffer.AppendFormat("Postcode = {0}, ",_postcode);
+			sbuffer.AppendFormat("CountryCode = {0}, ",_countryCode);
 			sbuffer.AppendFormat("Latitude = {0}, ",_latitude);
 			sbuffer.AppendFormat("Longitude = {0}, ",_longitude);
 			sbuffer.AppendFormat("DistanceKm = {0}, ",_distanceKm);

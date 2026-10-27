@@ -13,7 +13,7 @@ namespace TreeRecycle.Web.ClubArea
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            litTokens.Text = string.Join(" &nbsp; ", EmailTemplate.Tokens.Select(t => "<code>" + Enc(t) + "</code>"));
+            litTokens.Text = string.Join(" &nbsp; ", EmailTemplate.Tokens.Where(t => t != "{{eircode}}").Select(t => "<code>" + Enc(t) + "</code>"));
             if (!IsPostBack)
             {
                 Bind(EmailTemplateType.Confirmation);
@@ -84,10 +84,10 @@ namespace TreeRecycle.Web.ClubArea
                 TotalAmount = 17m,
                 AddressLine1 = "12 Main Street",
                 Town = CurrentClub.Town,
-                Eircode = "A65 F4E2",
+                Postcode = Country.PostcodeExample,
             };
             ClubCollectionDate date = CurrentClub.UpcomingDates.FirstOrDefault()
-                                      ?? new ClubCollectionDate { CollectionDate = Settings.TodayIrish.AddDays(14) };
+                                      ?? new ClubCollectionDate { CollectionDate = CurrentClub.Today.AddDays(14) };
             var values = EmailTemplate.TokenValues(CurrentClub, sample, date);
             bool ok = Mailer.Send(CurrentClub.ContactEmail, "[TEST] " + t.RenderSubject(values), t.RenderHtml(values), t.RenderText(values),
                                   CurrentClub.ContactEmail, CurrentClub.ClubId, 0, (int)type);

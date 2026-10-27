@@ -57,14 +57,14 @@ namespace TreeRecycle.Web.ClubArea
                 string compact = s.Replace(" ", "").ToUpperInvariant();
                 list = list.Where(o => o.CustomerName.IndexOf(s, StringComparison.OrdinalIgnoreCase) >= 0
                                     || o.OrderRef.IndexOf(s, StringComparison.OrdinalIgnoreCase) >= 0
-                                    || o.Eircode.Replace(" ", "").Contains(compact)
+                                    || o.Postcode.Replace(" ", "").Contains(compact)
                                     || o.CustomerPhone.Replace(" ", "").Contains(s.Replace(" ", ""))
                                     || o.FullAddress.IndexOf(s, StringComparison.OrdinalIgnoreCase) >= 0);
             }
             switch (ddlSort.SelectedValue)
             {
                 case "distance": list = list.OrderBy(o => o.DistanceKm); break;
-                case "eircode": list = list.OrderBy(o => o.Eircode); break;
+                case "postcode": list = list.OrderBy(o => o.Postcode); break;
                 case "newest": list = list.OrderByDescending(o => o.CreatedDate); break;
                 default: list = list.OrderBy(o => o.RunNumber == 0 ? int.MaxValue : o.RunNumber).ThenBy(o => o.RunSequence).ThenBy(o => o.DistanceKm); break;
             }
@@ -102,7 +102,7 @@ namespace TreeRecycle.Web.ClubArea
                     break;
                 case "notout":
                     o.StatusEnum = OrderStatus.NotOut;
-                    o.StatusNote = "Not out when the crew called, " + Settings.ToIrish(DateTime.UtcNow).ToString("d MMM HH:mm");
+                    o.StatusNote = "Not out when the crew called, " + CurrentClub.ToLocal(DateTime.UtcNow).ToString("d MMM HH:mm");
                     o.UpdatedBy = "CLB";
                     o.Update();
                     break;
@@ -137,13 +137,13 @@ namespace TreeRecycle.Web.ClubArea
         protected void btnCsv_Click(object sender, EventArgs e)
         {
             var sb = new StringBuilder();
-            sb.AppendLine("Run,Stop,Ref,Status,Collection day,Customer,Phone,Email,Address 1,Address 2,Town,Eircode,Latitude,Longitude,Km from club,Tree,Qty,Club amount,Stripe fee,Notes");
+            sb.AppendLine("Run,Stop,Ref,Status,Collection day,Customer,Phone,Email,Address 1,Address 2,Town,Postcode,Latitude,Longitude,Km from club,Tree,Qty,Club amount,Stripe fee,Notes");
             foreach (TreeOrder o in Filtered())
             {
                 sb.AppendLine(string.Join(",", new[]
                 {
                     o.RunNumber.ToString(), o.RunSequence.ToString(), o.OrderRef, o.StatusText, DateName(o.ClubCollectionDateId),
-                    o.CustomerName, o.CustomerPhone, o.CustomerEmail, o.AddressLine1, o.AddressLine2, o.Town, o.Eircode,
+                    o.CustomerName, o.CustomerPhone, o.CustomerEmail, o.AddressLine1, o.AddressLine2, o.Town, o.Postcode,
                     o.Latitude.ToString(CultureInfo.InvariantCulture), o.Longitude.ToString(CultureInfo.InvariantCulture),
                     o.DistanceKm.ToString("0.0", CultureInfo.InvariantCulture), o.SizeLabel, o.Quantity.ToString(),
                     o.ClubAmount.ToString("0.00", CultureInfo.InvariantCulture), o.StripeFee.ToString("0.00", CultureInfo.InvariantCulture), o.LocationNotes,

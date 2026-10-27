@@ -14,6 +14,8 @@ namespace TreeRecycle.Web.ClubArea {
 
         protected global::System.Web.UI.WebControls.TextBox txtCloseDate;
 
+        protected global::System.Web.UI.WebControls.Literal litRadiusUnit;
+
         protected global::System.Web.UI.WebControls.TextBox txtRadius;
 
         protected global::System.Web.UI.WebControls.TextBox txtCapacity;
@@ -36,11 +38,23 @@ namespace TreeRecycle.Web.ClubArea {
 
         protected global::System.Web.UI.WebControls.TextBox txtTown;
 
-        protected global::System.Web.UI.WebControls.DropDownList ddlCounty;
+        protected global::System.Web.UI.WebControls.Literal litRegionLabel;
 
-        protected global::System.Web.UI.WebControls.TextBox txtEircode;
+        protected global::System.Web.UI.WebControls.DropDownList ddlRegion;
+
+        protected global::System.Web.UI.WebControls.TextBox txtRegion;
+
+        protected global::System.Web.UI.WebControls.Literal litPostcodeLabel;
+
+        protected global::System.Web.UI.WebControls.TextBox txtPostcode;
 
         protected global::System.Web.UI.WebControls.Literal litGeo;
+
+        protected global::System.Web.UI.WebControls.Literal litCountry;
+
+        protected global::System.Web.UI.WebControls.PlaceHolder phTimeZone;
+
+        protected global::System.Web.UI.WebControls.DropDownList ddlTimeZone;
 
         protected global::System.Web.UI.WebControls.TextBox txtContactName;
 

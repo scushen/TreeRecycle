@@ -6,7 +6,7 @@
     <div class="card">
         <div class="tablewrap">
             <table class="data">
-                <tr><th>Label shown to customers</th><th>Size (ft)</th><th>Your price (€)</th><th>Customer pays</th><th>Order</th><th>Offered</th></tr>
+                <tr><th>Label shown to customers</th><th>Size (ft)</th><th>Your price (<%: Country.CurrencySymbol %>)</th><th>Customer pays</th><th>Order</th><th>Offered</th></tr>
                 <asp:Repeater ID="rptPrices" runat="server" ItemType="TreeRecycle.DataAccessObjects.ClubPrice">
                     <ItemTemplate>
                         <tr>
@@ -38,7 +38,7 @@
                 <asp:TextBox ID="txtNewFeet" runat="server" TextMode="Number" min="1" max="30" />
             </div>
             <div class="field">
-                <label for="<%= txtNewPrice.ClientID %>">Price (€)</label>
+                <label for="<%= txtNewPrice.ClientID %>">Price (<%: Country.CurrencySymbol %>)</label>
                 <asp:TextBox ID="txtNewPrice" runat="server" />
             </div>
         </div>

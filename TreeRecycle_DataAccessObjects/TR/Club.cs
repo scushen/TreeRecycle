@@ -24,7 +24,18 @@ namespace TreeRecycle.DataAccessObjects
             set { Status = (int)value; }
         }
 
-        public string Province { get { return Geo.ProvinceOf(County); } }
+        /// <summary>Currency, postcode format, distance unit and booking fee all follow the club's country.</summary>
+        public CountryInfo Country { get { return Countries.Get(CountryCode); } }
+
+        /// <summary>"Today" in the club's own time zone - collection dates are local calendar dates.</summary>
+        public DateTime Today { get { return Settings.TodayIn(TimeZone); } }
+
+        public DateTime ToLocal(DateTime utc) { return Settings.ToLocal(utc, TimeZone); }
+
+        public string Money(decimal amount) { return Country.Money(amount); }
+
+        /// <summary>Collection radius in the country's unit (miles in the UK and US); stored in km.</summary>
+        public int RadiusInDisplayUnits { get { return Country.ToDisplayUnits(CollectionRadiusKm); } }
 
         public string PublicUrl { get { return Settings.SiteUrl + "/c/" + Slug; } }
 
@@ -32,7 +43,8 @@ namespace TreeRecycle.DataAccessObjects
         {
             get
             {
-                return string.Join(", ", new[] { AddressLine1, AddressLine2, Town, County == "" ? "" : "Co. " + County, Eircode }
+                string region = Region == "" ? "" : (CountryCode == "IE" ? "Co. " + Region : Region);
+                return string.Join(", ", new[] { AddressLine1, AddressLine2, Town, region, Postcode }
                     .Where(s => !string.IsNullOrWhiteSpace(s)));
             }
         }
@@ -44,7 +56,7 @@ namespace TreeRecycle.DataAccessObjects
 
         public IList<ClubCollectionDate> UpcomingDates
         {
-            get { return ClubCollectionDate.ForClub(ClubId, true).Where(d => d.CollectionDate >= Settings.TodayIrish).ToList(); }
+            get { return ClubCollectionDate.ForClub(ClubId, true).Where(d => d.CollectionDate >= Today).ToList(); }
         }
 
         /// <summary>Stripe can take money on this club's behalf.</summary>
@@ -55,7 +67,7 @@ namespace TreeRecycle.DataAccessObjects
 
         public bool OrdersClosedByDate
         {
-            get { return OrdersCloseDate.HasValue && Settings.TodayIrish > OrdersCloseDate.Value.Date; }
+            get { return OrdersCloseDate.HasValue && Today > OrdersCloseDate.Value.Date; }
         }
 
         /// <summary>
@@ -68,7 +80,7 @@ namespace TreeRecycle.DataAccessObjects
             if (StatusEnum != ClubStatus.Approved)
                 blockers.Add("Your club has not been verified yet.");
             if (!Geocoded)
-                blockers.Add("We couldn't place your club's Eircode on the map. Check it on the Club details page.");
+                blockers.Add("We couldn't place your club's " + Country.PostcodeName + " on the map. Check it on the Club details page.");
             if (!StripeReady)
                 blockers.Add("Connect a Stripe account so you can be paid.");
             if (ActivePrices.Count == 0)
@@ -142,8 +154,8 @@ namespace TreeRecycle.DataAccessObjects
             return FindAll(new ICriterion[] { Expression.Eq(PropertyNames.Status, (int)status) }, new[] { Order.Asc(PropertyNames.ClubName) });
         }
 
-        /// <summary>Approved clubs whose public order page is live, optionally limited to one county.</summary>
-        public static IList<Club> FindOrderable(string county)
+        /// <summary>Approved clubs in a country whose public order page is live, optionally limited to one region.</summary>
+        public static IList<Club> FindOrderable(string countryCode, string region)
         {
             var criteria = new List<ICriterion>
             {
@@ -152,16 +164,18 @@ namespace TreeRecycle.DataAccessObjects
                 Expression.Eq(PropertyNames.StripeChargesEnabled, true),
                 Expression.Eq(PropertyNames.Geocoded, true),
             };
-            if (!string.IsNullOrEmpty(county))
-                criteria.Add(Expression.Eq(PropertyNames.County, county));
+            if (!string.IsNullOrEmpty(countryCode))
+                criteria.Add(Expression.Eq(PropertyNames.CountryCode, countryCode));
+            if (!string.IsNullOrEmpty(region))
+                criteria.Add(Expression.Eq(PropertyNames.Region, region));
             return FindAll(criteria.ToArray(), new[] { Order.Asc(PropertyNames.ClubName) })
                 .Where(c => c.IsOrderable).ToList();
         }
 
         /// <summary>Orderable clubs whose collection radius covers the point, nearest first.</summary>
-        public static IList<Club> FindCovering(decimal lat, decimal lng)
+        public static IList<Club> FindCovering(decimal lat, decimal lng, string countryCode)
         {
-            return FindOrderable(null).Where(c => c.Covers(lat, lng)).OrderBy(c => c.DistanceKmTo(lat, lng)).ToList();
+            return FindOrderable(countryCode, null).Where(c => c.Covers(lat, lng)).OrderBy(c => c.DistanceKmTo(lat, lng)).ToList();
         }
 
         #endregion

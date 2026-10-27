@@ -155,16 +155,22 @@ namespace TreeRecycle.DataAccessObjects
 			set { _baseClass.Town = value; }
 		}
 
-		public virtual string County
+		public virtual string Region
 		{
-			get { return _baseClass.County; }
-			set { _baseClass.County = value; }
+			get { return _baseClass.Region; }
+			set { _baseClass.Region = value; }
 		}
 
-		public virtual string Eircode
+		public virtual string Postcode
 		{
-			get { return _baseClass.Eircode; }
-			set { _baseClass.Eircode = value; }
+			get { return _baseClass.Postcode; }
+			set { _baseClass.Postcode = value; }
+		}
+
+		public virtual string CountryCode
+		{
+			get { return _baseClass.CountryCode; }
+			set { _baseClass.CountryCode = value; }
 		}
 
 		public virtual decimal Latitude
@@ -302,8 +308,9 @@ namespace TreeRecycle.DataAccessObjects
 			public const string AddressLine1 = "AddressLine1";
 			public const string AddressLine2 = "AddressLine2";
 			public const string Town = "Town";
-			public const string County = "County";
-			public const string Eircode = "Eircode";
+			public const string Region = "Region";
+			public const string Postcode = "Postcode";
+			public const string CountryCode = "CountryCode";
 			public const string Latitude = "Latitude";
 			public const string Longitude = "Longitude";
 			public const string DistanceKm = "DistanceKm";

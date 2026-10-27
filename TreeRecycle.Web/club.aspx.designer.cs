@@ -28,7 +28,11 @@ namespace TreeRecycle.Web {
 
         protected global::System.Web.UI.WebControls.DropDownList ddlDate;
 
-        protected global::System.Web.UI.WebControls.TextBox txtEircode;
+        protected global::System.Web.UI.WebControls.Literal litPostcodeLabel;
+
+        protected global::System.Web.UI.WebControls.TextBox txtPostcode;
+
+        protected global::System.Web.UI.WebControls.Literal litPostcodeHint;
 
         protected global::System.Web.UI.WebControls.TextBox txtAddress1;
 

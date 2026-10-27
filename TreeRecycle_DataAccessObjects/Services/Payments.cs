@@ -33,7 +33,7 @@ namespace TreeRecycle.DataAccessObjects
                 var account = new AccountService().Create(new AccountCreateOptions
                 {
                     Type = "standard",
-                    Country = "IE",
+                    Country = club.CountryCode,
                     Email = club.ContactEmail,
                     BusinessProfile = new AccountBusinessProfileOptions
                     {
@@ -108,7 +108,7 @@ namespace TreeRecycle.DataAccessObjects
                         Quantity = order.Quantity,
                         PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
                         {
-                            Currency = "eur",
+                            Currency = order.Currency,
                             UnitAmount = Cents(order.UnitPrice),
                             ProductData = new Stripe.Checkout.SessionLineItemPriceDataProductDataOptions
                             {
@@ -133,7 +133,7 @@ namespace TreeRecycle.DataAccessObjects
                     Quantity = order.Quantity,
                     PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
                     {
-                        Currency = "eur",
+                        Currency = order.Currency,
                         UnitAmount = Cents(order.PlatformFeePerTree),
                         ProductData = new Stripe.Checkout.SessionLineItemPriceDataProductDataOptions
                         {

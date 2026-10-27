@@ -38,7 +38,7 @@ namespace TreeRecycle.Web.ClubArea
                     ddlDate.SelectedValue = Q("date");
                 else
                 {
-                    var next = dates.FirstOrDefault(d => d.CollectionDate >= Settings.TodayIrish);
+                    var next = dates.FirstOrDefault(d => d.CollectionDate >= CurrentClub.Today);
                     if (next != null)
                         ddlDate.SelectedValue = next.ClubCollectionDateId.ToString();
                 }

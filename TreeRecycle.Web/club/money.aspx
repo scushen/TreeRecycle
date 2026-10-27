@@ -35,7 +35,7 @@
                     <asp:TextBox ID="txtDesc" runat="server" MaxLength="200" />
                 </div>
                 <div class="field">
-                    <label for="<%= txtAmount.ClientID %>">Amount (€)</label>
+                    <label for="<%= txtAmount.ClientID %>">Amount (<%: Country.CurrencySymbol %>)</label>
                     <asp:TextBox ID="txtAmount" runat="server" />
                 </div>
             </div>

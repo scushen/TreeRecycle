@@ -20,15 +20,7 @@ namespace TreeRecycle.DataAccessObjects
         public static string StripeSecretKey { get { return Get("StripeSecretKey"); } }
         public static string StripeConnectWebhookSecret { get { return Get("StripeConnectWebhookSecret"); } }
 
-        /// <summary>Our technology fee per tree, in euro. Goes to the platform Stripe account as an application fee.</summary>
-        public static decimal PlatformFeePerTree
-        {
-            get
-            {
-                decimal fee;
-                return decimal.TryParse(Get("PlatformFeePerTree"), NumberStyles.Number, CultureInfo.InvariantCulture, out fee) ? fee : 2.00m;
-            }
-        }
+        // Booking fees are per currency: see CountryInfo.BookingFee (PlatformFeePerTree_GBP etc.).
 
         public static string GoogleGeocodingApiKey { get { return Get("GoogleGeocodingApiKey"); } }
 
@@ -36,19 +28,30 @@ namespace TreeRecycle.DataAccessObjects
         public static string EmailFromAddress { get { return Get("EmailFromAddress"); } }
         public static string AdminNotifyEmail { get { return Get("AdminNotifyEmail"); } }
 
-        /// <summary>Ireland. Stored dates are UTC; everything shown to people is Irish time.</summary>
-        public static readonly TimeZoneInfo IrishTime = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+        /// <summary>The platform admin works in Irish time; club pages use the club's own time zone.</summary>
+        public const string AdminTimeZone = "GMT Standard Time";
 
-        public static DateTime ToIrish(DateTime utc)
+        /// <summary>Stored dates are UTC; convert to a Windows time zone id for display. Unknown ids fall back to Irish time.</summary>
+        public static DateTime ToLocal(DateTime utc, string timeZoneId)
         {
-            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), IrishTime);
+            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), Zone(timeZoneId));
         }
 
-        public static DateTime TodayIrish { get { return ToIrish(DateTime.UtcNow).Date; } }
-
-        public static string Money(decimal amount)
+        public static DateTime TodayIn(string timeZoneId)
         {
-            return "€" + amount.ToString("0.00", CultureInfo.InvariantCulture);
+            return ToLocal(DateTime.UtcNow, timeZoneId).Date;
+        }
+
+        private static TimeZoneInfo Zone(string id)
+        {
+            try
+            {
+                return TimeZoneInfo.FindSystemTimeZoneById(string.IsNullOrEmpty(id) ? AdminTimeZone : id);
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                return TimeZoneInfo.FindSystemTimeZoneById(AdminTimeZone);
+            }
         }
     }
 }

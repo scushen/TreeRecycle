@@ -48,7 +48,7 @@ namespace TreeRecycle.Web.ClubArea
                 var sb = new StringBuilder("<table class=\"data\"><tr><th>When</th><th>Who</th><th>Tree</th><th class=\"num\">Paid</th></tr>");
                 foreach (var o in latest)
                     sb.AppendFormat("<tr><td class=\"nowrap\">{0}</td><td>{1}<div class=\"small muted\">{2}</div></td><td>{3}</td><td class=\"num\">{4}</td></tr>",
-                        IrishDate(o.PaidDate ?? o.CreatedDate, "d MMM HH:mm"), Enc(o.CustomerName), Enc(o.Town + " " + o.Eircode), Enc(o.Quantity + " x " + o.SizeLabel), Money(o.TotalAmount));
+                        LocalDate(o.PaidDate ?? o.CreatedDate, "d MMM HH:mm"), Enc(o.CustomerName), Enc(o.Town + " " + o.Postcode), Enc(o.Quantity + " x " + o.SizeLabel), Money(o.TotalAmount));
                 litLatest.Text = sb.Append("</table><br />").ToString();
             }
         }

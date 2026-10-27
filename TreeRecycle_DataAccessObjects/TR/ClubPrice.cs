@@ -5,8 +5,6 @@ namespace TreeRecycle.DataAccessObjects
 {
     public partial class ClubPrice
     {
-        public string PriceText { get { return Settings.Money(Price); } }
-
         public static IList<ClubPrice> ForClub(int clubId, bool activeOnly)
         {
             var criteria = new List<ICriterion> { Expression.Eq(PropertyNames.ClubId, clubId) };

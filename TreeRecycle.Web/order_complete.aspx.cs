@@ -45,7 +45,7 @@ namespace TreeRecycle.Web
             litTree.Text = Enc(order.Quantity + " x " + order.SizeLabel);
             litDate.Text = date == null ? "To be confirmed" : Enc(date.DisplayName);
             litAddress.Text = Enc(order.FullAddress);
-            litPaid.Text = Money(order.TotalAmount);
+            litPaid.Text = order.Money(order.TotalAmount);
         }
     }
 }

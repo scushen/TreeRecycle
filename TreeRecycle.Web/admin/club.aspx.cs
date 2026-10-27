@@ -34,18 +34,19 @@ namespace TreeRecycle.Web.Admin
             litStatus.Text = "<span class=\"pill " + pill + "\" style=\"vertical-align:middle;font-family:Inter,sans-serif\">" + c.StatusEnum + "</span>";
 
             var sb = new StringBuilder();
+            Row(sb, "Country", Enc(c.Country.Name + " (" + c.Country.Currency.ToUpperInvariant() + ")"));
             Row(sb, "Type", Enc(c.ClubType));
             Row(sb, "Registration no.", Enc(c.RegistrationNumber == "" ? "-" : c.RegistrationNumber));
             Row(sb, "Website", c.Website == "" ? "-" : "<a href=\"" + Enc(c.Website.StartsWith("http") ? c.Website : "https://" + c.Website) + "\" target=\"_blank\" rel=\"noopener nofollow\">" + Enc(c.Website) + "</a>");
             Row(sb, "Address", Enc(c.FullAddress) + (c.Geocoded
                 ? "<div class=\"small\"><a href=\"" + Geo.GoogleMapsLink(c.Latitude, c.Longitude) + "\" target=\"_blank\" rel=\"noopener\">See on map</a></div>"
-                : "<div class=\"small\" style=\"color:#b8322a\">Eircode not found on the map</div>"));
+                : "<div class=\"small\" style=\"color:#b8322a\">Address not found on the map</div>"));
             Row(sb, "Contact", Enc(c.ContactName));
             Row(sb, "Phone", "<a href=\"tel:" + Enc(c.ContactPhone.Replace(" ", "")) + "\">" + Enc(c.ContactPhone) + "</a>");
             Row(sb, "Email", "<a href=\"mailto:" + Enc(c.ContactEmail) + "\">" + Enc(c.ContactEmail) + "</a>");
-            Row(sb, "Registered", IrishDate(c.CreatedDate, "d MMM yyyy HH:mm"));
-            Row(sb, "Approved", c.ApprovedDate.HasValue ? IrishDate(c.ApprovedDate, "d MMM yyyy") : "-");
-            Row(sb, "Last login", c.LastLoginDate.HasValue ? IrishDate(c.LastLoginDate, "d MMM yyyy HH:mm") : "Never");
+            Row(sb, "Registered", AdminDate(c.CreatedDate, "d MMM yyyy HH:mm"));
+            Row(sb, "Approved", c.ApprovedDate.HasValue ? AdminDate(c.ApprovedDate, "d MMM yyyy") : "-");
+            Row(sb, "Last login", c.LastLoginDate.HasValue ? AdminDate(c.LastLoginDate, "d MMM yyyy HH:mm") : "Never");
             litDetails.Text = sb.ToString();
 
             var orders = TreeOrder.ForClub(c.ClubId);
@@ -58,8 +59,8 @@ namespace TreeRecycle.Web.Admin
             Row(act, "Collected", sales.Where(o => o.StatusEnum == OrderStatus.Collected).Sum(o => o.Quantity).ToString());
             Row(act, "Not out", sales.Where(o => o.StatusEnum == OrderStatus.NotOut).Sum(o => o.Quantity).ToString());
             Row(act, "Refunded", orders.Count(o => o.StatusEnum == OrderStatus.Refunded).ToString());
-            Row(act, "Club takings", Money(sales.Sum(o => o.ClubAmount)));
-            Row(act, "Our booking fees", Money(sales.Sum(o => o.PlatformFee)));
+            Row(act, "Club takings", Enc(c.Money(sales.Sum(o => o.ClubAmount))));
+            Row(act, "Our booking fees", Enc(c.Money(sales.Sum(o => o.PlatformFee))));
             litActivity.Text = act.ToString();
             lnkPublic.NavigateUrl = "~/c/" + c.Slug;
 

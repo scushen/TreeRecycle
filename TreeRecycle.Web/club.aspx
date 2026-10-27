@@ -14,7 +14,7 @@
     <asp:PlaceHolder ID="phNotFound" runat="server" Visible="false">
         <div class="card lift narrow">
             <h2>Club not found</h2>
-            <p>We couldn't find that club. <a href="<%: ResolveUrl("~/") %>">Search by Eircode</a> to find a club near you.</p>
+            <p>We couldn't find that club. <a href="<%: ResolveUrl("~/") %>">Search by postcode</a> to find a club near you.</p>
         </div>
     </asp:PlaceHolder>
 
@@ -32,7 +32,7 @@
                             <ItemTemplate>
                                 <li><label>
                                     <input type="radio" name="size" value="<%# Item.ClubPriceId %>" data-price="<%# Item.Price.ToString(System.Globalization.CultureInfo.InvariantCulture) %>" <%# Item.ClubPriceId == SelectedPriceId ? "checked" : "" %> required />
-                                    <span><%#: Item.Label %><br /><span class="muted"><%#: Item.PriceText %></span></span>
+                                    <span><%#: Item.Label %><br /><span class="muted"><%#: PriceText(Item.Price) %></span></span>
                                 </label></li>
                             </ItemTemplate>
                         </asp:Repeater>
@@ -57,9 +57,9 @@
 
                 <h2 class="mt">2. Where is it?</h2>
                 <div class="field">
-                    <label for="<%= txtEircode.ClientID %>">Eircode</label>
-                    <asp:TextBox ID="txtEircode" runat="server" MaxLength="10" style="text-transform:uppercase;max-width:200px" required="required" />
-                    <div class="hint">We use your Eircode to check you're in the club's collection area and to plan the route.</div>
+                    <label for="<%= txtPostcode.ClientID %>"><asp:Literal ID="litPostcodeLabel" runat="server" /></label>
+                    <asp:TextBox ID="txtPostcode" runat="server" MaxLength="12" style="text-transform:uppercase;max-width:200px" required="required" />
+                    <div class="hint"><asp:Literal ID="litPostcodeHint" runat="server" /></div>
                 </div>
                 <div class="field">
                     <label for="<%= txtAddress1.ClientID %>">Address</label>
@@ -114,7 +114,7 @@
                     <h3 class="mt">Collection days</h3>
                     <asp:Literal ID="litDates" runat="server" />
                     <asp:Literal ID="litCollectionInfo" runat="server" />
-                    <p class="small muted mt">Collects within <asp:Literal ID="litRadius" runat="server" /> km of the club.</p>
+                    <p class="small muted mt">Collects within <asp:Literal ID="litRadius" runat="server" /> of the club.</p>
                 </div>
                 <div class="card">
                     <h3>Questions?</h3>
@@ -129,7 +129,8 @@
     (function () {
         var fee = <%= FeePerTreeJs %>;
         var qty = document.getElementById('<%= ddlQty.ClientID %>');
-        function money(n) { return '€' + n.toFixed(2); }
+        var symbol = <%= CurrencySymbolJs %>;
+        function money(n) { return symbol + n.toFixed(2); }
         function update() {
             var picked = document.querySelector('input[name=size]:checked');
             var q = parseInt(qty.value, 10) || 1;

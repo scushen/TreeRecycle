@@ -52,6 +52,7 @@ p { margin: 0 0 1em; }
 .searchbox { display: flex; gap: 8px; max-width: 520px; margin-top: 24px; flex-wrap: wrap; }
 .searchbox input[type=text] { flex: 1 1 220px; font-size: 1.15rem; padding: 14px 16px; border-radius: 10px; border: 0; text-transform: uppercase; letter-spacing: .05em; }
 .searchbox input[type=text]::placeholder { text-transform: none; letter-spacing: 0; }
+.searchbox select.country { flex: 0 1 auto; width: auto; font-size: 1.05rem; padding: 14px 12px; border-radius: 10px; border: 0; }
 
 /* Cards & layout */
 main { padding: 32px 0 64px; }

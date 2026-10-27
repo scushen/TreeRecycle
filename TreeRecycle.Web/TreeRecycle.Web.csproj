@@ -14,6 +14,11 @@
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort>44380</IISExpressSSLPort>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <Use64BitIISExpress />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,27 +36,69 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Castle.ActiveRecord"><HintPath>..\lib\Castle.ActiveRecord.dll</HintPath></Reference>
-    <Reference Include="Castle.Core"><HintPath>..\lib\Castle.Core.dll</HintPath></Reference>
-    <Reference Include="Castle.DynamicProxy2"><HintPath>..\lib\Castle.DynamicProxy2.dll</HintPath></Reference>
-    <Reference Include="Castle.Components.Validator"><HintPath>..\lib\Castle.Components.Validator.dll</HintPath></Reference>
-    <Reference Include="Iesi.Collections"><HintPath>..\lib\Iesi.Collections.dll</HintPath></Reference>
-    <Reference Include="log4net"><HintPath>..\lib\log4net.dll</HintPath></Reference>
-    <Reference Include="NHibernate"><HintPath>..\lib\NHibernate.dll</HintPath></Reference>
-    <Reference Include="NHibernate.ByteCode.Castle"><HintPath>..\lib\NHibernate.ByteCode.Castle.dll</HintPath></Reference>
-    <Reference Include="Newtonsoft.Json"><HintPath>..\lib\Newtonsoft.Json.dll</HintPath></Reference>
-    <Reference Include="Stripe.net"><HintPath>..\lib\Stripe.net.dll</HintPath></Reference>
-    <Reference Include="System.Buffers"><HintPath>..\lib\System.Buffers.dll</HintPath></Reference>
-    <Reference Include="System.Memory"><HintPath>..\lib\System.Memory.dll</HintPath></Reference>
-    <Reference Include="System.Numerics.Vectors"><HintPath>..\lib\System.Numerics.Vectors.dll</HintPath></Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe"><HintPath>..\lib\System.Runtime.CompilerServices.Unsafe.dll</HintPath></Reference>
-    <Reference Include="System.Text.Encodings.Web"><HintPath>..\lib\System.Text.Encodings.Web.dll</HintPath></Reference>
-    <Reference Include="System.Text.Json"><HintPath>..\lib\System.Text.Json.dll</HintPath></Reference>
-    <Reference Include="System.Threading.Tasks.Extensions"><HintPath>..\lib\System.Threading.Tasks.Extensions.dll</HintPath></Reference>
-    <Reference Include="System.ValueTuple"><HintPath>..\lib\System.ValueTuple.dll</HintPath></Reference>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces"><HintPath>..\lib\Microsoft.Bcl.AsyncInterfaces.dll</HintPath></Reference>
-    <Reference Include="Microsoft.Bcl.HashCode"><HintPath>..\lib\Microsoft.Bcl.HashCode.dll</HintPath></Reference>
-    <Reference Include="Microsoft.Bcl.Memory"><HintPath>..\lib\Microsoft.Bcl.Memory.dll</HintPath></Reference>
+    <Reference Include="Castle.ActiveRecord">
+      <HintPath>..\lib\Castle.ActiveRecord.dll</HintPath>
+    </Reference>
+    <Reference Include="Castle.Core">
+      <HintPath>..\lib\Castle.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Castle.DynamicProxy2">
+      <HintPath>..\lib\Castle.DynamicProxy2.dll</HintPath>
+    </Reference>
+    <Reference Include="Castle.Components.Validator">
+      <HintPath>..\lib\Castle.Components.Validator.dll</HintPath>
+    </Reference>
+    <Reference Include="Iesi.Collections">
+      <HintPath>..\lib\Iesi.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\lib\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="NHibernate">
+      <HintPath>..\lib\NHibernate.dll</HintPath>
+    </Reference>
+    <Reference Include="NHibernate.ByteCode.Castle">
+      <HintPath>..\lib\NHibernate.ByteCode.Castle.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\lib\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Stripe.net">
+      <HintPath>..\lib\Stripe.net.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Buffers">
+      <HintPath>..\lib\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Memory">
+      <HintPath>..\lib\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics.Vectors">
+      <HintPath>..\lib\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>..\lib\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Encodings.Web">
+      <HintPath>..\lib\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Json">
+      <HintPath>..\lib\System.Text.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions">
+      <HintPath>..\lib\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple">
+      <HintPath>..\lib\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces">
+      <HintPath>..\lib\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.HashCode">
+      <HintPath>..\lib\Microsoft.Bcl.HashCode.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.Memory">
+      <HintPath>..\lib\Microsoft.Bcl.Memory.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -67,7 +114,119 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="**\*.cs" Exclude="bin\**;obj\**" />
+    <Compile Include="admin\Admin.Master.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="admin\Admin.Master.designer.cs" />
+    <Compile Include="admin\club.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="admin\club.aspx.designer.cs" />
+    <Compile Include="admin\default.aspx.cs" />
+    <Compile Include="admin\default.aspx.designer.cs" />
+    <Compile Include="admin\login.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="admin\login.aspx.designer.cs" />
+    <Compile Include="admin\logout.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="admin\logout.aspx.designer.cs" />
+    <Compile Include="club.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="club.aspx.designer.cs" />
+    <Compile Include="club\Club.Master.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="club\Club.Master.designer.cs" />
+    <Compile Include="club\dates.aspx.cs" />
+    <Compile Include="club\dates.aspx.designer.cs" />
+    <Compile Include="club\default.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="club\default.aspx.designer.cs" />
+    <Compile Include="club\details.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="club\details.aspx.designer.cs" />
+    <Compile Include="club\emails.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="club\emails.aspx.designer.cs" />
+    <Compile Include="club\logout.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="club\logout.aspx.designer.cs" />
+    <Compile Include="club\money.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="club\money.aspx.designer.cs" />
+    <Compile Include="club\orders.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="club\orders.aspx.designer.cs" />
+    <Compile Include="club\prices.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="club\prices.aspx.designer.cs" />
+    <Compile Include="club\routes.aspx.cs" />
+    <Compile Include="club\routes.aspx.designer.cs" />
+    <Compile Include="club\stripe.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="club\stripe.aspx.designer.cs" />
+    <Compile Include="Code\AdminPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Code\BasePage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Code\ClubMoney.cs" />
+    <Compile Include="Code\ClubPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Code\ClubResult.cs" />
+    <Compile Include="Code\CountryFields.cs" />
+    <Compile Include="default.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="default.aspx.designer.cs" />
+    <Compile Include="forgot.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="forgot.aspx.designer.cs" />
+    <Compile Include="Global.asax.cs" />
+    <Compile Include="health.ashx.cs" />
+    <Compile Include="login.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="login.aspx.designer.cs" />
+    <Compile Include="order_complete.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="order_complete.aspx.designer.cs" />
+    <Compile Include="privacy.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="privacy.aspx.designer.cs" />
+    <Compile Include="register.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="register.aspx.designer.cs" />
+    <Compile Include="reset.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="reset.aspx.designer.cs" />
+    <Compile Include="Site.Master.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Site.Master.designer.cs" />
+    <Compile Include="stripe_webhook.ashx.cs" />
+    <Compile Include="terms.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="terms.aspx.designer.cs" />
     <Content Include="**\*.aspx;**\*.ashx;**\*.Master;Global.asax;Web.config;error.html;css\**\*.css" Exclude="bin\**;obj\**" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -79,9 +238,13 @@
           <UseIIS>False</UseIIS>
           <AutoAssignPort>False</AutoAssignPort>
           <DevelopmentServerPort>44380</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>https://localhost:44380/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
     </VisualStudio>

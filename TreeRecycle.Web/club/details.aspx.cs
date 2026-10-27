@@ -2,21 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Web.UI.WebControls;
 using TreeRecycle.DataAccessObjects;
 
 namespace TreeRecycle.Web.ClubArea
 {
     public partial class Details : ClubPage
     {
+        protected string RegionInputId
+        {
+            get { return Country.HasRegionList ? ddlRegion.ClientID : txtRegion.ClientID; }
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
                 foreach (string t in Club.ClubTypes)
                     ddlType.Items.Add(t);
-                foreach (string c in Geo.AllCounties)
-                    ddlCounty.Items.Add(c);
                 Bind();
             }
         }
@@ -24,9 +26,11 @@ namespace TreeRecycle.Web.ClubArea
         private void Bind()
         {
             Club c = CurrentClub;
+            CountryInfo country = c.Country;
             chkAccepting.Checked = c.AcceptingOrders;
             txtCloseDate.Text = c.OrdersCloseDate.HasValue ? c.OrdersCloseDate.Value.ToString("yyyy-MM-dd") : "";
-            txtRadius.Text = c.CollectionRadiusKm.ToString();
+            litRadiusUnit.Text = country.DistanceUnit;
+            txtRadius.Text = c.RadiusInDisplayUnits.ToString();
             txtCapacity.Text = c.TrailerCapacity.ToString();
             txtDescription.Text = c.PublicDescription;
             txtCollectionInfo.Text = c.CollectionInfo;
@@ -39,24 +43,28 @@ namespace TreeRecycle.Web.ClubArea
             txtAddress1.Text = c.AddressLine1;
             txtAddress2.Text = c.AddressLine2;
             txtTown.Text = c.Town;
-            if (ddlCounty.Items.FindByValue(c.County) != null)
-                ddlCounty.SelectedValue = c.County;
-            txtEircode.Text = c.Eircode;
+            litRegionLabel.Text = Enc(country.RegionName);
+            CountryFields.BindRegion(ddlRegion, txtRegion, country, c.Region);
+            litPostcodeLabel.Text = Enc(char.ToUpperInvariant(country.PostcodeName[0]) + country.PostcodeName.Substring(1));
+            txtPostcode.Text = c.Postcode;
+            litCountry.Text = Enc(country.Name + " (" + country.Currency.ToUpperInvariant() + ")");
+            CountryFields.BindTimeZones(ddlTimeZone, phTimeZone, country, c.TimeZone);
             txtContactName.Text = c.ContactName;
             txtPhone.Text = c.ContactPhone;
             txtEmail.Text = c.ContactEmail;
             litGeo.Text = c.Geocoded
                 ? "Mapped at <a href=\"" + Geo.GoogleMapsLink(c.Latitude, c.Longitude) + "\" target=\"_blank\" rel=\"noopener\">this point</a>. Collections are measured from here."
-                : "<strong style=\"color:#b8322a\">We couldn't place this Eircode on the map - please check it.</strong>";
+                : "<strong style=\"color:#b8322a\">We couldn't place this address on the map - please check it.</strong>";
         }
 
         protected void btnSave_Click(object sender, EventArgs e)
         {
             Club c = CurrentClub;
+            CountryInfo country = c.Country;
             var errors = new List<string>();
 
             int radius, capacity;
-            if (!int.TryParse(txtRadius.Text, out radius) || radius < 1 || radius > 100) errors.Add("Collection radius must be between 1 and 100 km.");
+            if (!int.TryParse(txtRadius.Text, out radius) || radius < 1 || radius > 100) errors.Add("Collection radius must be between 1 and 100 " + country.DistanceUnit + ".");
             if (!int.TryParse(txtCapacity.Text, out capacity) || capacity < 1 || capacity > 500) errors.Add("Trees per load must be between 1 and 500.");
             DateTime closeDate = DateTime.MinValue;
             if (txtCloseDate.Text != "" && !DateTime.TryParseExact(txtCloseDate.Text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out closeDate))
@@ -70,8 +78,10 @@ namespace TreeRecycle.Web.ClubArea
                 Club other = Club.FindByEmail(email);
                 if (other != null && other.ClubId != c.ClubId) errors.Add("That email is used by another club.");
             }
-            string eircode = Geo.NormaliseEircode(txtEircode.Text);
-            if (eircode == "") errors.Add("Enter a valid Eircode.");
+            string postcode = country.NormalisePostcode(txtPostcode.Text);
+            if (postcode == "") errors.Add("Enter a valid " + country.PostcodeName + ", like " + country.PostcodeExample + ".");
+            string region = Clean(CountryFields.ReadRegion(ddlRegion, txtRegion, country), 100);
+            if (region == "") errors.Add("Enter your " + country.RegionName.ToLowerInvariant() + ".");
 
             if (errors.Count > 0)
             {
@@ -79,10 +89,13 @@ namespace TreeRecycle.Web.ClubArea
                 return;
             }
 
-            bool eircodeChanged = eircode != c.Eircode || !c.Geocoded;
+            string address1 = Clean(txtAddress1.Text, 150), town = Clean(txtTown.Text, 100);
+            // Outside Ireland the street address matters for the map point, not just the postcode.
+            bool locationChanged = postcode != c.Postcode || !c.Geocoded
+                                   || (!country.PostcodeIsExact && (address1 != c.AddressLine1 || town != c.Town));
             c.AcceptingOrders = chkAccepting.Checked;
             c.OrdersCloseDate = txtCloseDate.Text == "" ? (DateTime?)null : closeDate;
-            c.CollectionRadiusKm = radius;
+            c.CollectionRadiusKm = (int)Math.Round(country.FromDisplayUnits(radius));
             c.TrailerCapacity = capacity;
             c.PublicDescription = Clean(txtDescription.Text, 2000);
             c.CollectionInfo = Clean(txtCollectionInfo.Text, 2000);
@@ -90,21 +103,22 @@ namespace TreeRecycle.Web.ClubArea
             c.ClubType = ddlType.SelectedValue;
             c.RegistrationNumber = Clean(txtRegNo.Text, 50);
             c.Website = Clean(txtWebsite.Text, 250);
-            c.AddressLine1 = Clean(txtAddress1.Text, 150);
+            c.AddressLine1 = address1;
             c.AddressLine2 = Clean(txtAddress2.Text, 150);
-            c.Town = Clean(txtTown.Text, 100);
-            c.County = ddlCounty.SelectedValue;
-            c.Eircode = eircode;
+            c.Town = town;
+            c.Region = region;
+            c.Postcode = postcode;
+            c.TimeZone = CountryFields.ReadTimeZone(ddlTimeZone, country);
             c.ContactName = Clean(txtContactName.Text, 100);
             c.ContactPhone = Clean(txtPhone.Text, 30);
             c.ContactEmail = email;
             c.UpdatedBy = "CLB";
 
             string warning = "";
-            if (eircodeChanged)
+            if (locationChanged)
             {
                 GeoPoint p = null;
-                try { p = Geo.Geocode(eircode); }
+                try { p = Geo.GeocodeAddress(address1, town, postcode, country.Code); }
                 catch (Exception ex) { System.Diagnostics.Trace.TraceError("Geocode failed: " + ex); }
                 c.Geocoded = p != null;
                 if (p != null)
@@ -113,7 +127,7 @@ namespace TreeRecycle.Web.ClubArea
                     c.Longitude = p.Longitude;
                 }
                 else
-                    warning = " But we couldn't place your Eircode on the map, so your page can't go live until it's fixed.";
+                    warning = " But we couldn't place your address on the map, so your page can't go live until it's fixed.";
             }
             c.Update();
             Bind();

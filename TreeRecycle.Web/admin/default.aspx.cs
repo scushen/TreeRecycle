@@ -40,7 +40,7 @@ namespace TreeRecycle.Web.Admin
             litPending.Text = all.Count(c => c.StatusEnum == ClubStatus.Pending).ToString();
             litLive.Text = all.Count(c => c.StatusEnum == ClubStatus.Approved && c.StripeChargesEnabled && c.AcceptingOrders).ToString();
             litTrees.Text = sales.Sum(o => o.Quantity).ToString();
-            litFees.Text = Money(sales.Sum(o => o.PlatformFee));
+            litFees.Text = Enc(Countries.MoneyByCurrency(sales, o => o.Currency, o => o.PlatformFee));
 
             var shown = all.Where(c => ddlStatus.SelectedValue == "" || c.Status.ToString() == ddlStatus.SelectedValue)
                            .OrderByDescending(c => c.CreatedDate).ToList();
@@ -52,10 +52,10 @@ namespace TreeRecycle.Web.Admin
                 return new ClubRow
                 {
                     Club = c,
-                    Registered = IrishDate(c.CreatedDate, "d MMM yyyy"),
+                    Registered = AdminDate(c.CreatedDate, "d MMM yyyy"),
                     StatusClass = c.StatusEnum == ClubStatus.Approved ? "" : c.StatusEnum == ClubStatus.Pending ? "gold" : "red",
                     Trees = mine.Sum(o => o.Quantity),
-                    Fees = Money(mine.Sum(o => o.PlatformFee)),
+                    Fees = c.Money(mine.Sum(o => o.PlatformFee)),
                 };
             }).ToList();
             rptClubs.DataBind();
