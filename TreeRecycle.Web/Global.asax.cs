@@ -29,6 +29,11 @@ namespace TreeRecycle.Web
 
         protected void Application_BeginRequest(object sender, EventArgs e)
         {
+            // HSTS: after one HTTPS visit, browsers go straight to https:// for a year. Only on real HTTPS requests,
+            // and never to localhost - a localhost HSTS entry would force HTTPS on every local site and port.
+            if (Request.IsSecureConnection && !Request.IsLocal)
+                Response.AppendHeader("Strict-Transport-Security", "max-age=31536000");
+
             if (BusinessObjectsFactory.IsInitialized)
                 return;
             // Static files and the health check work without the database.
