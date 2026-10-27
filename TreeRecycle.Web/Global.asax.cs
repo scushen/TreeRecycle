@@ -31,7 +31,9 @@ namespace TreeRecycle.Web
         {
             // HSTS: after one HTTPS visit, browsers go straight to https:// for a year. Only on real HTTPS requests,
             // and never to localhost - a localhost HSTS entry would force HTTPS on every local site and port.
-            if (Request.IsSecureConnection && !Request.IsLocal)
+            // Azure ends HTTPS at its front end and marks the forwarded request with X-ARR-SSL.
+            bool https = Request.IsSecureConnection || Request.Headers["X-ARR-SSL"] != null;
+            if (https && !Request.IsLocal)
                 Response.AppendHeader("Strict-Transport-Security", "max-age=31536000");
 
             if (BusinessObjectsFactory.IsInitialized)
