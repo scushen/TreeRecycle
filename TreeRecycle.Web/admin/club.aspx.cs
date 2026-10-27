@@ -123,13 +123,21 @@ namespace TreeRecycle.Web.Admin
             litMsg.Text = "<div class=\"msg warn\"><strong>" + Enc(action) + ", but the email to " + Enc(_club.ContactEmail) + " failed.</strong> "
                           + Enc(last == null ? "" : last.ErrorSummary) + " Let the club know another way, or fix the email settings and try again.</div>";
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         protected void btnReject_Click(object sender, EventArgs e)
         {
             SetBlocked(ClubStatus.Rejected, "Your registration wasn't approved",
                 "we weren't able to verify " + _club.ClubName + ", so we can't approve it for " + Settings.SiteName + " at this time.");
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         protected void btnSuspend_Click(object sender, EventArgs e)
         {
             SetBlocked(ClubStatus.Suspended, "Your account has been suspended",

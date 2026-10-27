@@ -6,12 +6,22 @@ namespace TreeRecycle.DataAccessObjects
     /// <summary>Every send attempt, with Postmark's error when it failed. Shown on the admin club page and health.ashx.</summary>
     public partial class EmailLog
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="clubId"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         public static IList<EmailLog> ForClub(int clubId, int max)
         {
             return FindTop(max, new ICriterion[] { Expression.Eq(PropertyNames.ClubId, clubId) },
                            new[] { Order.Desc(PropertyNames.EmailLogId) });
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public static EmailLog Latest()
         {
             return FindFirst(new ICriterion[] { }, new[] { Order.Desc(PropertyNames.EmailLogId) });
