@@ -58,6 +58,8 @@ namespace TreeRecycle.Web
                 }
             }
 
+            sb.AppendLine("Eircode lookups since start: " + Geo.GeocodeGoogleCalls + " billed by Google, " + Geo.GeocodeCacheHits + " answered from cache");
+
             sb.AppendLine();
             sb.AppendLine("SiteUrl: " + Settings.SiteUrl);
             sb.AppendLine("StripeSecretKey: " + StripeMode(Settings.StripeSecretKey));

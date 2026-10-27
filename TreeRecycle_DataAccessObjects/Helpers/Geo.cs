@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Runtime.Caching;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Newtonsoft.Json.Linq;
 
 namespace TreeRecycle.DataAccessObjects
@@ -78,14 +80,71 @@ namespace TreeRecycle.DataAccessObjects
 
         private static double ToRad(double deg) { return deg * Math.PI / 180.0; }
 
+        // Google lookups are billed per call, and one booking typically looks the same Eircode up twice
+        // (home-page search, then order submit). Found points are kept 7 days (Google's terms allow up to 30);
+        // "no such address" for an hour so typos aren't re-billed; quota/key/network errors are never cached.
+        private static readonly MemoryCache GeoCache = new MemoryCache("TreeRecycleGeocode");
+        private static readonly TimeSpan FoundLifetime = TimeSpan.FromDays(7);
+        private static readonly TimeSpan NotFoundLifetime = TimeSpan.FromHours(1);
+        private static readonly object NotFound = new object();
+        private static long _cacheHits;
+        private static long _googleCalls;
+
+        /// <summary>Lookups answered from the cache since the app started (shown on health.ashx).</summary>
+        public static long GeocodeCacheHits { get { return Interlocked.Read(ref _cacheHits); } }
+
+        /// <summary>Billable Google Geocoding calls since the app started (shown on health.ashx).</summary>
+        public static long GeocodeGoogleCalls { get { return Interlocked.Read(ref _googleCalls); } }
+
         /// <summary>
-        /// Geocodes an Eircode (or a free-text Irish address) with the Google Geocoding API.
-        /// Returns null when nothing usable comes back. Throws only on configuration errors.
+        /// Geocodes an Eircode (or a free-text Irish address), from the cache when it can, otherwise with the
+        /// Google Geocoding API. Returns null when nothing usable comes back. Throws on configuration or network errors.
         /// </summary>
         public static GeoPoint Geocode(string eircodeOrAddress)
         {
             if (string.IsNullOrWhiteSpace(eircodeOrAddress))
                 return null;
+
+            // "a65f4e2", "A65 F4E2" and " a65  f4e2 " share one cache entry.
+            string eircode = NormaliseEircode(eircodeOrAddress);
+            string cacheKey = eircode != string.Empty ? eircode : Regex.Replace(eircodeOrAddress.Trim().ToUpperInvariant(), @"\s+", " ");
+
+            object cached = GeoCache.Get(cacheKey);
+            if (cached != null)
+            {
+                Interlocked.Increment(ref _cacheHits);
+                return cached == NotFound ? null : Copy((GeoPoint)cached);
+            }
+
+            bool definitive;
+            GeoPoint point = GeocodeFromGoogle(cacheKey, out definitive);
+            if (point != null)
+                GeoCache.Set(cacheKey, Copy(point), DateTimeOffset.UtcNow.Add(FoundLifetime));
+            else if (definitive)
+                GeoCache.Set(cacheKey, NotFound, DateTimeOffset.UtcNow.Add(NotFoundLifetime));
+            return point;
+        }
+
+        private static GeoPoint Copy(GeoPoint p)
+        {
+            return new GeoPoint
+            {
+                Latitude = p.Latitude,
+                Longitude = p.Longitude,
+                FormattedAddress = p.FormattedAddress,
+                Precision = p.Precision,
+                County = p.County,
+                Town = p.Town,
+            };
+        }
+
+        /// <summary>
+        /// One billable Google call. definitive = Google answered properly (found, or ZERO_RESULTS), so the answer can be
+        /// cached; false for OVER_QUERY_LIMIT, REQUEST_DENIED, INVALID_REQUEST, UNKNOWN_ERROR.
+        /// </summary>
+        private static GeoPoint GeocodeFromGoogle(string eircodeOrAddress, out bool definitive)
+        {
+            definitive = false;
             string key = Settings.GoogleGeocodingApiKey;
             if (string.IsNullOrEmpty(key))
                 throw new InvalidOperationException("GoogleGeocodingApiKey is not set in web.config.");
@@ -93,6 +152,7 @@ namespace TreeRecycle.DataAccessObjects
             string url = "https://maps.googleapis.com/maps/api/geocode/json?region=ie&components=country:IE&address="
                          + Uri.EscapeDataString(eircodeOrAddress.Trim()) + "&key=" + Uri.EscapeDataString(key);
             string json;
+            Interlocked.Increment(ref _googleCalls);
             using (var wc = new WebClient())
             {
                 wc.Encoding = System.Text.Encoding.UTF8;
@@ -100,8 +160,18 @@ namespace TreeRecycle.DataAccessObjects
             }
 
             JObject root = JObject.Parse(json);
-            if ((string)root["status"] != "OK")
+            string status = (string)root["status"];
+            if (status == "ZERO_RESULTS")
+            {
+                definitive = true;
                 return null;
+            }
+            if (status != "OK")
+            {
+                System.Diagnostics.Trace.TraceWarning("Google geocode status " + status + ": " + (string)root["error_message"]);
+                return null;
+            }
+            definitive = true;
             JToken first = root["results"][0];
             var point = new GeoPoint
             {
