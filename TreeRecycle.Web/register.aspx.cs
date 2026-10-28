@@ -99,20 +99,8 @@ namespace TreeRecycle.Web
                 UpdatedBy = "WEB",
             };
 
-            try
-            {
-                GeoPoint point = Geo.GeocodeAddress(club.AddressLine1, club.Town, postcode, country.Code);
-                if (point != null)
-                {
-                    club.Latitude = point.Latitude;
-                    club.Longitude = point.Longitude;
-                    club.Geocoded = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.TraceError("Geocode at registration failed: " + ex);
-            }
+            // Not fatal: the Club details page retries until the club is on the map.
+            club.Locate();
 
             club.Create();
             ClubPrice.CreateDefaults(club.ClubId);

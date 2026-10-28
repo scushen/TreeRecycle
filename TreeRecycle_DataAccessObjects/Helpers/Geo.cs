@@ -21,6 +21,16 @@ namespace TreeRecycle.DataAccessObjects
         public string Town { get; set; }
     }
 
+    /// <summary>
+    /// Google couldn't answer (bad or restricted key, quota, network). Not the same as "no such address": the
+    /// address may be fine, so callers say "try again" instead of "check your postcode".
+    /// </summary>
+    public class GeoLookupException : Exception
+    {
+        public GeoLookupException(string message) : base(message) { }
+        public GeoLookupException(string message, Exception inner) : base(message, inner) { }
+    }
+
     /// <summary>Distances and Google geocoding for every country in <see cref="Countries"/>.</summary>
     public static class Geo
     {
@@ -46,6 +56,9 @@ namespace TreeRecycle.DataAccessObjects
         private static readonly object NotFound = new object();
         private static long _cacheHits;
         private static long _googleCalls;
+        private static long _googleFailures;
+        private static string _lastProblem;
+        private static DateTime? _lastProblemUtc;
 
         /// <summary>Lookups answered from the cache since the app started (shown on health.ashx).</summary>
         public static long GeocodeCacheHits { get { return Interlocked.Read(ref _cacheHits); } }
@@ -53,9 +66,18 @@ namespace TreeRecycle.DataAccessObjects
         /// <summary>Billable Google Geocoding calls since the app started (shown on health.ashx).</summary>
         public static long GeocodeGoogleCalls { get { return Interlocked.Read(ref _googleCalls); } }
 
+        /// <summary>Lookups Google refused or couldn't answer since the app started (shown on health.ashx).</summary>
+        public static long GeocodeFailures { get { return Interlocked.Read(ref _googleFailures); } }
+
+        /// <summary>The most recent refusal, with Google's own explanation, or null if there hasn't been one.</summary>
+        public static string LastProblem { get { return _lastProblem; } }
+
+        public static DateTime? LastProblemUtc { get { return _lastProblemUtc; } }
+
         /// <summary>
         /// Geocodes a postcode or a full address inside one country, from the cache when it can, otherwise with the
-        /// Google Geocoding API. Returns null when nothing usable comes back. Throws on configuration or network errors.
+        /// Google Geocoding API. Returns null when Google says there's no such place. Throws <see cref="GeoLookupException"/> when Google can't
+        /// answer (key, quota or network problem).
         /// </summary>
         public static GeoPoint Geocode(string postcodeOrAddress, string countryCode)
         {
@@ -75,11 +97,11 @@ namespace TreeRecycle.DataAccessObjects
                 return cached == NotFound ? null : Copy((GeoPoint)cached);
             }
 
-            bool definitive;
-            GeoPoint point = GeocodeFromGoogle(query, country, out definitive);
+            // Refusals throw before reaching here, so only real answers are cached.
+            GeoPoint point = GeocodeFromGoogle(query, country);
             if (point != null)
                 GeoCache.Set(cacheKey, Copy(point), DateTimeOffset.UtcNow.Add(FoundLifetime));
-            else if (definitive)
+            else
                 GeoCache.Set(cacheKey, NotFound, DateTimeOffset.UtcNow.Add(NotFoundLifetime));
             return point;
         }
@@ -112,15 +134,14 @@ namespace TreeRecycle.DataAccessObjects
         }
 
         /// <summary>
-        /// One billable Google call. definitive = Google answered properly (found, or ZERO_RESULTS), so the answer can be
-        /// cached; false for OVER_QUERY_LIMIT, REQUEST_DENIED, INVALID_REQUEST, UNKNOWN_ERROR.
+        /// One billable Google call. Null for ZERO_RESULTS; throws for OVER_QUERY_LIMIT, REQUEST_DENIED, INVALID_REQUEST,
+        /// UNKNOWN_ERROR and network failures.
         /// </summary>
-        private static GeoPoint GeocodeFromGoogle(string query, CountryInfo country, out bool definitive)
+        private static GeoPoint GeocodeFromGoogle(string query, CountryInfo country)
         {
-            definitive = false;
             string key = Settings.GoogleGeocodingApiKey;
-            if (string.IsNullOrEmpty(key))
-                throw new InvalidOperationException("GoogleGeocodingApiKey is not set.");
+            if (string.IsNullOrEmpty(key) || key.StartsWith("PLACEHOLDER", StringComparison.OrdinalIgnoreCase))
+                throw Problem("GoogleGeocodingApiKey is not set.", null);
 
             string cc = country.Code.ToLowerInvariant();
             string url = "https://maps.googleapis.com/maps/api/geocode/json?region=" + (cc == "gb" ? "uk" : cc)
@@ -128,25 +149,28 @@ namespace TreeRecycle.DataAccessObjects
                          + "&address=" + Uri.EscapeDataString(query) + "&key=" + Uri.EscapeDataString(key);
             string json;
             Interlocked.Increment(ref _googleCalls);
-            using (var wc = new WebClient())
+            try
             {
-                wc.Encoding = System.Text.Encoding.UTF8;
-                json = wc.DownloadString(url);
+                using (var wc = new WebClient())
+                {
+                    wc.Encoding = System.Text.Encoding.UTF8;
+                    json = wc.DownloadString(url);
+                }
+            }
+            catch (WebException ex)
+            {
+                throw Problem("Couldn't reach Google: " + ex.Message, ex);
             }
 
             JObject root = JObject.Parse(json);
             string status = (string)root["status"];
             if (status == "ZERO_RESULTS")
-            {
-                definitive = true;
                 return null;
-            }
             if (status != "OK")
             {
-                System.Diagnostics.Trace.TraceWarning("Google geocode status " + status + ": " + (string)root["error_message"]);
-                return null;
+                string detail = (string)root["error_message"];
+                throw Problem("Google said " + status + (string.IsNullOrEmpty(detail) ? "" : ": " + detail), null);
             }
-            definitive = true;
 
             JToken first = root["results"][0];
             var point = new GeoPoint
@@ -180,6 +204,15 @@ namespace TreeRecycle.DataAccessObjects
                     point.Town = (string)comp["long_name"] ?? string.Empty;
             }
             return point;
+        }
+
+        private static GeoLookupException Problem(string message, Exception inner)
+        {
+            Interlocked.Increment(ref _googleFailures);
+            _lastProblem = message;
+            _lastProblemUtc = DateTime.UtcNow;
+            System.Diagnostics.Trace.TraceWarning("Geocode problem: " + message);
+            return new GeoLookupException(message, inner);
         }
 
         public static string GoogleMapsLink(decimal lat, decimal lng)

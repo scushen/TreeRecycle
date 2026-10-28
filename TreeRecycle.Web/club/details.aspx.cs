@@ -8,6 +8,8 @@ namespace TreeRecycle.Web.ClubArea
 {
     public partial class Details : ClubPage
     {
+        private string _geoProblem = "";
+
         protected string RegionInputId
         {
             get { return Country.HasRegionList ? ddlRegion.ClientID : txtRegion.ClientID; }
@@ -19,6 +21,17 @@ namespace TreeRecycle.Web.ClubArea
             {
                 foreach (string t in Club.ClubTypes)
                     ddlType.Items.Add(t);
+                // A club that couldn't be mapped at registration (e.g. before the Google key was set) used to stay
+                // unmapped until its postcode changed. Try again whenever the page is opened.
+                if (!CurrentClub.Geocoded && CurrentClub.Postcode != "")
+                {
+                    _geoProblem = CurrentClub.Locate();
+                    if (CurrentClub.Geocoded)
+                    {
+                        CurrentClub.UpdatedBy = "CLB";
+                        CurrentClub.Update();
+                    }
+                }
                 Bind();
             }
         }
@@ -54,7 +67,7 @@ namespace TreeRecycle.Web.ClubArea
             txtEmail.Text = c.ContactEmail;
             litGeo.Text = c.Geocoded
                 ? "Mapped at <a href=\"" + Geo.GoogleMapsLink(c.Latitude, c.Longitude) + "\" target=\"_blank\" rel=\"noopener\">this point</a>. Collections are measured from here."
-                : "<strong style=\"color:#b8322a\">We couldn't place this address on the map - please check it.</strong>";
+                : "<strong style=\"color:#b8322a\">" + Enc(_geoProblem != "" ? _geoProblem : "We couldn't place this address on the map - please check it.") + "</strong>";
         }
 
         protected void btnSave_Click(object sender, EventArgs e)
@@ -117,17 +130,9 @@ namespace TreeRecycle.Web.ClubArea
             string warning = "";
             if (locationChanged)
             {
-                GeoPoint p = null;
-                try { p = Geo.GeocodeAddress(address1, town, postcode, country.Code); }
-                catch (Exception ex) { System.Diagnostics.Trace.TraceError("Geocode failed: " + ex); }
-                c.Geocoded = p != null;
-                if (p != null)
-                {
-                    c.Latitude = p.Latitude;
-                    c.Longitude = p.Longitude;
-                }
-                else
-                    warning = " But we couldn't place your address on the map, so your page can't go live until it's fixed.";
+                _geoProblem = c.Locate();
+                if (_geoProblem != "")
+                    warning = " But " + char.ToLowerInvariant(_geoProblem[0]) + _geoProblem.Substring(1) + " Your page can't go live until your address is on the map.";
             }
             c.Update();
             Bind();

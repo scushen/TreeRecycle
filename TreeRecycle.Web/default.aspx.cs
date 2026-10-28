@@ -82,10 +82,10 @@ namespace TreeRecycle.Web
             {
                 point = Geo.Geocode(postcode, country.Code);
             }
-            catch (Exception ex)
+            catch (GeoLookupException)
             {
-                System.Diagnostics.Trace.TraceError("Geocode failed: " + ex);
-                point = null;
+                litSearchMsg.Text = "<div class=\"msg err\">Sorry, we couldn't search just now. Please try again in a minute, or browse by area below.</div>";
+                return;
             }
             if (point == null)
             {

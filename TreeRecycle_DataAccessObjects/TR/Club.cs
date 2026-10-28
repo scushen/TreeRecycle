@@ -106,6 +106,30 @@ namespace TreeRecycle.DataAccessObjects
             return Geocoded && DistanceKmTo(lat, lng) <= CollectionRadiusKm;
         }
 
+        /// <summary>
+        /// Places the club on the map from its current address (caller saves). Returns "" when placed, otherwise
+        /// a sentence for the club saying why not - a Google outage reads differently from a bad postcode.
+        /// </summary>
+        public string Locate()
+        {
+            GeoPoint p;
+            try
+            {
+                p = Geo.GeocodeAddress(AddressLine1, Town, Postcode, CountryCode);
+            }
+            catch (GeoLookupException)
+            {
+                Geocoded = false;
+                return "The map lookup isn't working right now, so we couldn't check your address. Please try again in a few minutes.";
+            }
+            Geocoded = p != null;
+            if (p == null)
+                return "We couldn't find " + Postcode + " on the map. Please check your " + Country.PostcodeName + ".";
+            Latitude = p.Latitude;
+            Longitude = p.Longitude;
+            return "";
+        }
+
         #region Finders
 
         public static Club FindById(int clubId)

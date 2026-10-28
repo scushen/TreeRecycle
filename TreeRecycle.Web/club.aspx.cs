@@ -157,9 +157,12 @@ namespace TreeRecycle.Web
             GeoPoint point = null;
             if (postcode != string.Empty && errors.Count == 0)
             {
+                bool lookupDown = false;
                 try { point = Geo.GeocodeAddress(Clean(txtAddress1.Text, 150), Clean(txtTown.Text, 100), postcode, country.Code); }
-                catch (Exception ex) { System.Diagnostics.Trace.TraceError("Geocode failed: " + ex); }
-                if (point == null)
+                catch (GeoLookupException) { lookupDown = true; }
+                if (lookupDown)
+                    errors.Add("Sorry, we couldn't check your address just now. Please try again in a minute.");
+                else if (point == null)
                     errors.Add("We couldn't find " + postcode + " on the map. Please check your " + country.PostcodeName + ".");
                 else if (!_club.Covers(point.Latitude, point.Longitude))
                 {

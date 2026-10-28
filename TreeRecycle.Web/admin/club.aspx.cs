@@ -99,6 +99,8 @@ namespace TreeRecycle.Web.Admin
             _club.StatusReason = string.Empty;
             if (first)
                 _club.ApprovedDate = DateTime.UtcNow;
+            if (!_club.Geocoded)
+                _club.Locate();
             _club.UpdatedBy = "ADM";
             _club.Update();
 

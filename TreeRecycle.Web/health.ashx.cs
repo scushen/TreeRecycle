@@ -58,7 +58,10 @@ namespace TreeRecycle.Web
                 }
             }
 
-            sb.AppendLine("Postcode lookups since start: " + Geo.GeocodeGoogleCalls + " billed by Google, " + Geo.GeocodeCacheHits + " answered from cache");
+            sb.AppendLine("Postcode lookups since start: " + Geo.GeocodeGoogleCalls + " billed by Google, " + Geo.GeocodeCacheHits + " answered from cache, "
+                          + Geo.GeocodeFailures + " refused or failed");
+            if (Geo.LastProblem != null)
+                sb.AppendLine("Last map lookup problem: " + Geo.LastProblem + " (" + Geo.LastProblemUtc.Value.ToString("yyyy-MM-dd HH:mm") + " UTC)");
             try
             {
                 EmailLog last = EmailLog.Latest();
