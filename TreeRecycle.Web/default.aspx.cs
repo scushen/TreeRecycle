@@ -84,12 +84,12 @@ namespace TreeRecycle.Web
             }
             catch (GeoLookupException)
             {
-                litSearchMsg.Text = "<div class=\"msg err\">Sorry, we couldn't search just now. Please try again in a minute, or browse by area below.</div>";
+                ShowAllInstead(country, postcode, "Sorry, we couldn't search by " + country.PostcodeName + " just now.");
                 return;
             }
             if (point == null)
             {
-                litSearchMsg.Text = "<div class=\"msg err\">We couldn't find " + Enc(postcode) + " on the map. Please check it, or browse by area below.</div>";
+                ShowAllInstead(country, postcode, "We couldn't find " + postcode + " on the map.");
                 return;
             }
 
@@ -117,6 +117,29 @@ namespace TreeRecycle.Web
                 ddlRegion.SelectedValue = point.Region;
                 BindTowns();
             }
+        }
+
+        /// <summary>
+        /// The postcode couldn't be placed (Google doesn't know every Eircode), so instead of a dead end the
+        /// customer gets every club taking bookings in the country and picks the one near them. The postcode still
+        /// travels to the booking page, where the full address gets a second chance.
+        /// </summary>
+        private void ShowAllInstead(CountryInfo country, string postcode, string reason)
+        {
+            var clubs = Club.FindOrderable(country.Code, null).OrderBy(c => c.Region).ThenBy(c => c.Town).ThenBy(c => c.ClubName).ToList();
+            ddlBrowseCountry.SelectedValue = country.Code;
+            BindRegions();
+            if (clubs.Count == 0)
+            {
+                litSearchMsg.Text = "<div class=\"msg err\">" + Enc(reason) + " No clubs are taking bookings in " + Enc(country.Name) + " yet.</div>";
+                return;
+            }
+            litSearchMsg.Text = "<div class=\"msg warn\">" + Enc(reason) + " Here " + (clubs.Count == 1 ? "is the club" : "are all the clubs")
+                                + " taking bookings in " + Enc(country.Name) + ". Pick one near you and we'll check your address when you book.</div>";
+            litResultsTitle.Text = "Clubs taking bookings in " + Enc(country.Name);
+            phResults.Visible = true;
+            rptResults.DataSource = clubs.Select(c => ClubResult.From(c, postcode, null)).ToList();
+            rptResults.DataBind();
         }
 
         protected void ddlBrowseCountry_Changed(object sender, EventArgs e)

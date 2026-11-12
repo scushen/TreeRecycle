@@ -80,6 +80,11 @@ namespace TreeRecycle.Web.ClubArea
             litEmpty.Text = orders.Any(o => o.RunNumber == 0)
                 ? "<div class=\"msg warn no-print\">Some bookings haven't been planned into a run yet. Press <strong>Plan runs</strong>.</div>"
                 : "";
+            int unmapped = orders.Count(o => !o.OnMap);
+            if (unmapped > 0)
+                litEmpty.Text += "<div class=\"msg warn no-print\"><strong>" + unmapped + (unmapped == 1 ? " booking isn't" : " bookings aren't")
+                                 + " on the map.</strong> We couldn't place the address, so " + (unmapped == 1 ? "it's" : "they're")
+                                 + " marked <em>Not on map</em> at the end of a run and missing from the map above. Check the address before the crew sets off.</div>";
 
             var runs = orders.GroupBy(o => o.RunNumber).OrderBy(g => g.Key == 0 ? int.MaxValue : g.Key).Select(g =>
             {
@@ -103,7 +108,7 @@ namespace TreeRecycle.Web.ClubArea
             MapJson = JsonConvert.SerializeObject(new
             {
                 club = new { lat = CurrentClub.Latitude, lng = CurrentClub.Longitude, name = CurrentClub.ClubName },
-                stops = orders.Select(o => new
+                stops = orders.Where(o => o.OnMap).Select(o => new
                 {
                     lat = o.Latitude,
                     lng = o.Longitude,

@@ -16,6 +16,14 @@ namespace TreeRecycle.Web.Admin {
 
         protected global::System.Web.UI.WebControls.Literal litDetails;
 
+        protected global::System.Web.UI.WebControls.Literal litMapHelp;
+
+        protected global::System.Web.UI.WebControls.TextBox txtLatLng;
+
+        protected global::System.Web.UI.WebControls.Button btnPlace;
+
+        protected global::System.Web.UI.WebControls.Button btnRelocate;
+
         protected global::System.Web.UI.WebControls.TextBox txtReason;
 
         protected global::System.Web.UI.WebControls.Button btnApprove;

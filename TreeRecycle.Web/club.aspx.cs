@@ -158,13 +158,18 @@ namespace TreeRecycle.Web
             if (postcode != string.Empty && errors.Count == 0)
             {
                 bool lookupDown = false;
-                try { point = Geo.GeocodeAddress(Clean(txtAddress1.Text, 150), Clean(txtTown.Text, 100), postcode, country.Code); }
+                // The club's own point steers an ambiguous street address to the one in its area.
+                try
+                {
+                    point = Geo.GeocodeAddress(Clean(txtAddress1.Text, 150), Clean(txtTown.Text, 100), "", postcode, country.Code,
+                                               _club.Latitude, _club.Longitude, Math.Max(_club.CollectionRadiusKm, 10));
+                }
                 catch (GeoLookupException) { lookupDown = true; }
                 if (lookupDown)
                     errors.Add("Sorry, we couldn't check your address just now. Please try again in a minute.");
-                else if (point == null)
-                    errors.Add("We couldn't find " + postcode + " on the map. Please check your " + country.PostcodeName + ".");
-                else if (!_club.Covers(point.Latitude, point.Longitude))
+                // point == null: Google knows neither the postcode nor the street. The customer picked this club, so the
+                // booking goes ahead without a map point and the club sees it flagged "Not on map".
+                else if (point != null && !_club.Covers(point.Latitude, point.Longitude))
                 {
                     errors.Add("Sorry, " + postcode + " is " + country.Distance(_club.DistanceKmTo(point.Latitude, point.Longitude)) + " from "
                                + _club.ClubName + ", outside their " + _club.RadiusInDisplayUnits + " " + country.DistanceUnit
@@ -200,11 +205,11 @@ namespace TreeRecycle.Web
                 AddressLine1 = Clean(txtAddress1.Text, 150),
                 AddressLine2 = Clean(txtAddress2.Text, 150),
                 Town = Clean(txtTown.Text, 100),
-                Region = point.Region,
+                Region = point == null ? _club.Region : point.Region,
                 Postcode = postcode,
-                Latitude = point.Latitude,
-                Longitude = point.Longitude,
-                DistanceKm = Math.Round((decimal)_club.DistanceKmTo(point.Latitude, point.Longitude), 2),
+                Latitude = point == null ? 0m : point.Latitude,
+                Longitude = point == null ? 0m : point.Longitude,
+                DistanceKm = point == null ? 0m : Math.Round((decimal)_club.DistanceKmTo(point.Latitude, point.Longitude), 2),
                 LocationNotes = Clean(txtNotes.Text, 500),
                 StatusEnum = OrderStatus.PendingPayment,
                 CreatedBy = "WEB",

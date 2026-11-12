@@ -64,7 +64,28 @@ namespace TreeRecycle.DataAccessObjects
 
         public string Money(decimal amount) { return Country.Money(amount); }
 
-        public string MapsLink { get { return Geo.GoogleMapsLink(Latitude, Longitude); } }
+        /// <summary>
+        /// False when Google couldn't place the address at booking time. The order was taken anyway (the customer
+        /// chose this club), so it has no point: 0,0 is stored and the route planner puts it at the end of a run.
+        /// </summary>
+        public bool OnMap { get { return Latitude != 0 || Longitude != 0; } }
+
+        /// <summary>The point when we have one, otherwise a Google Maps search for the written address.</summary>
+        public string MapsLink
+        {
+            get { return OnMap ? Geo.GoogleMapsLink(Latitude, Longitude) : Geo.GoogleMapsSearchLink(FullAddress + ", " + Country.Name); }
+        }
+
+        /// <summary>What Google Maps directions should aim at: "lat,lng", or the written address when unmapped.</summary>
+        public string DirectionsTarget
+        {
+            get
+            {
+                return OnMap
+                    ? Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture) + "," + Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                    : FullAddress + ", " + Country.Name;
+            }
+        }
 
         #region Finders
 

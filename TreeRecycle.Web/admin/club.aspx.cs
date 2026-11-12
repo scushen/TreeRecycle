@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using TreeRecycle.DataAccessObjects;
@@ -48,6 +49,11 @@ namespace TreeRecycle.Web.Admin
             Row(sb, "Approved", c.ApprovedDate.HasValue ? AdminDate(c.ApprovedDate, "d MMM yyyy") : "-");
             Row(sb, "Last login", c.LastLoginDate.HasValue ? AdminDate(c.LastLoginDate, "d MMM yyyy HH:mm") : "Never");
             litDetails.Text = sb.ToString();
+            litMapHelp.Text = c.Geocoded
+                ? "The club is on the map. Collections are measured from this point; change it only if the marker is in the wrong place."
+                : "<strong style=\"color:#b8322a\">Google couldn't find this address, so the club can't go live.</strong> Set the position by hand below.";
+            if (!IsPostBack && c.Geocoded)
+                txtLatLng.Text = c.Latitude.ToString(CultureInfo.InvariantCulture) + ", " + c.Longitude.ToString(CultureInfo.InvariantCulture);
 
             var orders = TreeOrder.ForClub(c.ClubId);
             var sales = orders.Where(o => o.IsSale).ToList();
@@ -157,6 +163,51 @@ namespace TreeRecycle.Web.Admin
                 "Hi " + _club.ContactName + ",\n\nSorry - " + sentence + (reason == "" ? "" : "\n\nReason: " + reason)
                 + "\n\nIf you think this is a mistake, just reply to this email.\n\n" + Settings.SiteName, _club.ClubId);
             ShowOutcome(status.ToString(), sent);
+            Bind();
+        }
+
+        /// <summary>Hand-placed map point, for addresses Google can't find. Accepts "53.295, -6.305" as Google Maps copies it.</summary>
+        protected void btnPlace_Click(object sender, EventArgs e)
+        {
+            string[] parts = (txtLatLng.Text ?? "").Replace("(", "").Replace(")", "").Split(new[] { ',', ' ', ';' }, StringSplitOptions.RemoveEmptyEntries);
+            decimal lat = 0, lng = 0;
+            bool ok = parts.Length == 2
+                      && decimal.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out lat)
+                      && decimal.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out lng)
+                      && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180 && !(lat == 0 && lng == 0);
+            if (!ok)
+            {
+                litMsg.Text = "<div class=\"msg err\">Enter the position as two numbers, latitude then longitude, like <strong>53.29500, -6.30500</strong>.</div>";
+                return;
+            }
+            _club.PlaceAt(lat, lng);
+            _club.UpdatedBy = "ADM";
+            _club.Update();
+            txtLatLng.Text = _club.Latitude.ToString(CultureInfo.InvariantCulture) + ", " + _club.Longitude.ToString(CultureInfo.InvariantCulture);
+            litMsg.Text = "<div class=\"msg ok\">Map position saved. <a href=\"" + Geo.GoogleMapsLink(_club.Latitude, _club.Longitude)
+                          + "\" target=\"_blank\" rel=\"noopener\">Check it on the map</a>.</div>";
+            Bind();
+        }
+
+        protected void btnRelocate_Click(object sender, EventArgs e)
+        {
+            bool wasPlaced = _club.Geocoded;
+            decimal oldLat = _club.Latitude, oldLng = _club.Longitude;
+            string problem = _club.Locate();
+            if (problem != "")
+            {
+                // Keep a hand-placed point rather than taking the club off the map because Google still can't find it.
+                if (wasPlaced)
+                    _club.PlaceAt(oldLat, oldLng);
+                litMsg.Text = "<div class=\"msg warn\">" + Enc(problem) + (wasPlaced ? " The existing map position has been kept." : "") + "</div>";
+                Bind();
+                return;
+            }
+            _club.UpdatedBy = "ADM";
+            _club.Update();
+            txtLatLng.Text = _club.Latitude.ToString(CultureInfo.InvariantCulture) + ", " + _club.Longitude.ToString(CultureInfo.InvariantCulture);
+            litMsg.Text = "<div class=\"msg ok\">Found the address. <a href=\"" + Geo.GoogleMapsLink(_club.Latitude, _club.Longitude)
+                          + "\" target=\"_blank\" rel=\"noopener\">Check it on the map</a>.</div>";
             Bind();
         }
 

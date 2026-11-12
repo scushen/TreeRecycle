@@ -19,6 +19,8 @@ namespace TreeRecycle.DataAccessObjects
         /// <summary>County / state / region, matched to the country's list where it has one.</summary>
         public string Region { get; set; }
         public string Town { get; set; }
+        /// <summary>True when Google only matched a whole county, state or region - too vague to stand in for a house.</summary>
+        public bool IsBroad { get; set; }
     }
 
     /// <summary>
@@ -81,6 +83,15 @@ namespace TreeRecycle.DataAccessObjects
         /// </summary>
         public static GeoPoint Geocode(string postcodeOrAddress, string countryCode)
         {
+            return Geocode(postcodeOrAddress, countryCode, null, null, 0);
+        }
+
+        /// <summary>
+        /// As above, but when a point is given Google prefers matches within <paramref name="nearKm"/> of it. This is
+        /// what stops "12 Main Street, Newtown" landing in the wrong Newtown. It is a preference, not a limit.
+        /// </summary>
+        public static GeoPoint Geocode(string postcodeOrAddress, string countryCode, decimal? nearLat, decimal? nearLng, int nearKm)
+        {
             if (string.IsNullOrWhiteSpace(postcodeOrAddress))
                 return null;
             CountryInfo country = Countries.Get(countryCode);
@@ -88,7 +99,8 @@ namespace TreeRecycle.DataAccessObjects
             // "a65f4e2", "A65 F4E2" and " a65  f4e2 " share one cache entry; the country is part of the key.
             string postcode = country.NormalisePostcode(postcodeOrAddress);
             string query = postcode != string.Empty ? postcode : Regex.Replace(postcodeOrAddress.Trim(), @"\s+", " ");
-            string cacheKey = country.Code + "|" + query.ToUpperInvariant();
+            string bounds = nearLat.HasValue && nearLng.HasValue && nearKm > 0 ? BoundsAround(nearLat.Value, nearLng.Value, nearKm) : string.Empty;
+            string cacheKey = country.Code + "|" + query.ToUpperInvariant() + (bounds == string.Empty ? "" : "|" + bounds);
 
             object cached = GeoCache.Get(cacheKey);
             if (cached != null)
@@ -98,7 +110,7 @@ namespace TreeRecycle.DataAccessObjects
             }
 
             // Refusals throw before reaching here, so only real answers are cached.
-            GeoPoint point = GeocodeFromGoogle(query, country);
+            GeoPoint point = GeocodeFromGoogle(query, country, bounds);
             if (point != null)
                 GeoCache.Set(cacheKey, Copy(point), DateTimeOffset.UtcNow.Add(FoundLifetime));
             else
@@ -107,17 +119,36 @@ namespace TreeRecycle.DataAccessObjects
         }
 
         /// <summary>
-        /// Where an order should be plotted. An Eircode pinpoints the house, so it's used alone (and is usually
-        /// already cached from the search). Other countries' postcodes cover a whole street or district, so the full
-        /// address is geocoded, falling back to the postcode if Google can't place the address.
+        /// Where a club or an order should be plotted. An Eircode pinpoints the house, so it's tried alone first (and is
+        /// usually already cached from the search); Google doesn't know every Eircode, so if that fails the street
+        /// address is tried instead. Other countries' postcodes cover a whole street or district, so the full address
+        /// is geocoded first, falling back to the postcode. Pass the club's point for an order so an ambiguous address
+        /// resolves to the one near the club. Returns null when nothing better than a whole county could be found.
         /// </summary>
-        public static GeoPoint GeocodeAddress(string address, string town, string postcode, string countryCode)
+        public static GeoPoint GeocodeAddress(string address, string town, string region, string postcode, string countryCode,
+                                              decimal? nearLat, decimal? nearLng, int nearKm)
         {
             CountryInfo country = Countries.Get(countryCode);
             if (country.PostcodeIsExact)
-                return Geocode(postcode, country.Code);
+            {
+                GeoPoint exact = Geocode(postcode, country.Code);
+                if (exact != null && !exact.IsBroad)
+                    return exact;
+                string street = string.Join(", ", new[] { address, town, region }.Where(s => !string.IsNullOrWhiteSpace(s)));
+                GeoPoint byStreet = Geocode(street, country.Code, nearLat, nearLng, nearKm);
+                return byStreet != null && !byStreet.IsBroad ? byStreet : null;
+            }
             string full = string.Join(", ", new[] { address, town, postcode }.Where(s => !string.IsNullOrWhiteSpace(s)));
-            return Geocode(full, country.Code) ?? Geocode(postcode, country.Code);
+            return Geocode(full, country.Code, nearLat, nearLng, nearKm) ?? Geocode(postcode, country.Code);
+        }
+
+        /// <summary>"south,west|north,east" box for Google's bounds parameter, roughly <paramref name="km"/> each way.</summary>
+        private static string BoundsAround(decimal lat, decimal lng, int km)
+        {
+            double dLat = km / 111.0;
+            double dLng = km / (111.0 * Math.Max(0.2, Math.Cos(ToRad((double)lat))));
+            Func<double, string> f = v => v.ToString("0.###", CultureInfo.InvariantCulture);
+            return f((double)lat - dLat) + "," + f((double)lng - dLng) + "|" + f((double)lat + dLat) + "," + f((double)lng + dLng);
         }
 
         private static GeoPoint Copy(GeoPoint p)
@@ -130,6 +161,7 @@ namespace TreeRecycle.DataAccessObjects
                 Precision = p.Precision,
                 Region = p.Region,
                 Town = p.Town,
+                IsBroad = p.IsBroad,
             };
         }
 
@@ -137,7 +169,7 @@ namespace TreeRecycle.DataAccessObjects
         /// One billable Google call. Null for ZERO_RESULTS; throws for OVER_QUERY_LIMIT, REQUEST_DENIED, INVALID_REQUEST,
         /// UNKNOWN_ERROR and network failures.
         /// </summary>
-        private static GeoPoint GeocodeFromGoogle(string query, CountryInfo country)
+        private static GeoPoint GeocodeFromGoogle(string query, CountryInfo country, string bounds)
         {
             string key = Settings.GoogleGeocodingApiKey;
             if (string.IsNullOrEmpty(key) || key.StartsWith("PLACEHOLDER", StringComparison.OrdinalIgnoreCase))
@@ -146,6 +178,7 @@ namespace TreeRecycle.DataAccessObjects
             string cc = country.Code.ToLowerInvariant();
             string url = "https://maps.googleapis.com/maps/api/geocode/json?region=" + (cc == "gb" ? "uk" : cc)
                          + "&components=country:" + country.Code
+                         + (string.IsNullOrEmpty(bounds) ? "" : "&bounds=" + Uri.EscapeDataString(bounds))
                          + "&address=" + Uri.EscapeDataString(query) + "&key=" + Uri.EscapeDataString(key);
             string json;
             Interlocked.Increment(ref _googleCalls);
@@ -173,6 +206,11 @@ namespace TreeRecycle.DataAccessObjects
             }
 
             JToken first = root["results"][0];
+            // When Google can't match the text it can hand back the country filter itself (the middle of Ireland).
+            // That's "not found", not a place.
+            var kinds = first["types"] == null ? new string[0] : first["types"].Values<string>().ToArray();
+            if (kinds.Contains("country"))
+                return null;
             var point = new GeoPoint
             {
                 Latitude = Math.Round(first["geometry"]["location"]["lat"].Value<decimal>(), 6),
@@ -181,6 +219,7 @@ namespace TreeRecycle.DataAccessObjects
                 FormattedAddress = (string)first["formatted_address"] ?? string.Empty,
                 Region = string.Empty,
                 Town = string.Empty,
+                IsBroad = kinds.Contains("administrative_area_level_1") || kinds.Contains("administrative_area_level_2"),
             };
 
             // Ireland and the UK name counties at level 2 (level 1 is "England" / "Leinster"-style); the others at level 1.
@@ -213,6 +252,12 @@ namespace TreeRecycle.DataAccessObjects
             _lastProblemUtc = DateTime.UtcNow;
             System.Diagnostics.Trace.TraceWarning("Geocode problem: " + message);
             return new GeoLookupException(message, inner);
+        }
+
+        /// <summary>Google Maps search for an address we couldn't turn into a point.</summary>
+        public static string GoogleMapsSearchLink(string address)
+        {
+            return "https://www.google.com/maps/search/?api=1&query=" + Uri.EscapeDataString(address ?? string.Empty);
         }
 
         public static string GoogleMapsLink(decimal lat, decimal lng)

@@ -40,7 +40,7 @@
                                 <tr>
                                     <td><strong><%# Item.RunSequence %></strong></td>
                                     <td><%#: Item.CustomerName %><div class="small"><%#: Item.CustomerPhone %></div></td>
-                                    <td><a href="<%#: Item.MapsLink %>" target="_blank" rel="noopener"><%#: Item.AddressLine1 %></a><%#: Item.AddressLine2 == "" ? "" : ", " + Item.AddressLine2 %>, <%#: Item.Town %></td>
+                                    <td><a href="<%#: Item.MapsLink %>" target="_blank" rel="noopener"><%#: Item.AddressLine1 %></a><%#: Item.AddressLine2 == "" ? "" : ", " + Item.AddressLine2 %>, <%#: Item.Town %><%# Item.OnMap ? "" : " <span class=\"pill gold\">Not on map</span>" %></td>
                                     <td class="nowrap"><%#: Item.Postcode %></td>
                                     <td class="nowrap"><%#: Item.Quantity + " x " + Item.SizeLabel %></td>
                                     <td class="small"><%#: Item.LocationNotes %></td>

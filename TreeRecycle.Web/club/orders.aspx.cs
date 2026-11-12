@@ -63,7 +63,7 @@ namespace TreeRecycle.Web.ClubArea
             }
             switch (ddlSort.SelectedValue)
             {
-                case "distance": list = list.OrderBy(o => o.DistanceKm); break;
+                case "distance": list = list.OrderBy(o => o.OnMap ? 0 : 1).ThenBy(o => o.DistanceKm); break;
                 case "postcode": list = list.OrderBy(o => o.Postcode); break;
                 case "newest": list = list.OrderByDescending(o => o.CreatedDate); break;
                 default: list = list.OrderBy(o => o.RunNumber == 0 ? int.MaxValue : o.RunNumber).ThenBy(o => o.RunSequence).ThenBy(o => o.DistanceKm); break;

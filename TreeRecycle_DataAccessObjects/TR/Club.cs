@@ -115,7 +115,7 @@ namespace TreeRecycle.DataAccessObjects
             GeoPoint p;
             try
             {
-                p = Geo.GeocodeAddress(AddressLine1, Town, Postcode, CountryCode);
+                p = Geo.GeocodeAddress(AddressLine1, Town, Region, Postcode, CountryCode, null, null, 0);
             }
             catch (GeoLookupException)
             {
@@ -124,10 +124,18 @@ namespace TreeRecycle.DataAccessObjects
             }
             Geocoded = p != null;
             if (p == null)
-                return "We couldn't find " + Postcode + " on the map. Please check your " + Country.PostcodeName + ".";
+                return "We couldn't find " + Postcode + " or your street address on the map. Please check your address and " + Country.PostcodeName + ".";
             Latitude = p.Latitude;
             Longitude = p.Longitude;
             return "";
+        }
+
+        /// <summary>Puts the club at a point the admin picked by hand, for addresses Google can't find (caller saves).</summary>
+        public void PlaceAt(decimal latitude, decimal longitude)
+        {
+            Latitude = Math.Round(latitude, 6);
+            Longitude = Math.Round(longitude, 6);
+            Geocoded = true;
         }
 
         #region Finders

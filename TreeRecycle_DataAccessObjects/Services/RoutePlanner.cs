@@ -18,10 +18,14 @@ namespace TreeRecycle.DataAccessObjects
         public static int Plan(Club club, IList<TreeOrder> orders)
         {
             int capacity = club.TrailerCapacity > 0 ? club.TrailerCapacity : 25;
-            List<TreeOrder> stops = orders.Where(o => o.IsOutstanding || o.StatusEnum == OrderStatus.Collected || o.StatusEnum == OrderStatus.NotOut)
-                                          .ToList();
-            if (stops.Count == 0)
+            List<TreeOrder> all = orders.Where(o => o.IsOutstanding || o.StatusEnum == OrderStatus.Collected || o.StatusEnum == OrderStatus.NotOut)
+                                        .ToList();
+            if (all.Count == 0)
                 return 0;
+            // Orders whose address couldn't be placed have no point to sweep or measure. They're added to the end
+            // of the last run that has room, so the crew still gets them on a sheet and looks the address up.
+            List<TreeOrder> stops = all.Where(o => o.OnMap).ToList();
+            List<TreeOrder> unmapped = all.Where(o => !o.OnMap).OrderBy(o => o.Town).ThenBy(o => o.AddressLine1).ToList();
 
             double originLat = (double)club.Latitude, originLng = (double)club.Longitude;
 
@@ -60,11 +64,19 @@ namespace TreeRecycle.DataAccessObjects
                 runs.Add(current);
 
             // Nearest run to the club goes first.
-            runs = runs.OrderBy(r => r.Min(o => Geo.DistanceKm(club.Latitude, club.Longitude, o.Latitude, o.Longitude))).ToList();
+            runs = runs.OrderBy(r => r.Min(o => Geo.DistanceKm(club.Latitude, club.Longitude, o.Latitude, o.Longitude)))
+                       .Select(r => NearestNeighbour(club.Latitude, club.Longitude, r)).ToList();
+
+            foreach (TreeOrder o in unmapped)
+            {
+                if (runs.Count == 0 || runs[runs.Count - 1].Sum(x => x.Quantity) + o.Quantity > capacity)
+                    runs.Add(new List<TreeOrder>());
+                runs[runs.Count - 1].Add(o);
+            }
 
             for (int r = 0; r < runs.Count; r++)
             {
-                List<TreeOrder> ordered = NearestNeighbour(club.Latitude, club.Longitude, runs[r]);
+                List<TreeOrder> ordered = runs[r];
                 for (int s = 0; s < ordered.Count; s++)
                 {
                     TreeOrder o = ordered[s];
@@ -110,12 +122,13 @@ namespace TreeRecycle.DataAccessObjects
         public static IList<string> DirectionsLinks(Club club, IList<TreeOrder> run)
         {
             var links = new List<string>();
+            // Unmapped stops go in as written addresses, which Google Maps directions also accepts.
             string origin = Point(club.Latitude, club.Longitude);
             for (int i = 0; i < run.Count; i += 10)
             {
                 var leg = run.Skip(i).Take(10).ToList();
-                string destination = Point(leg.Last().Latitude, leg.Last().Longitude);
-                string waypoints = string.Join("|", leg.Take(leg.Count - 1).Select(o => Point(o.Latitude, o.Longitude)));
+                string destination = leg.Last().DirectionsTarget;
+                string waypoints = string.Join("|", leg.Take(leg.Count - 1).Select(o => o.DirectionsTarget));
                 links.Add("https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=" + Uri.EscapeDataString(origin)
                           + "&destination=" + Uri.EscapeDataString(destination)
                           + (waypoints == "" ? "" : "&waypoints=" + Uri.EscapeDataString(waypoints)));

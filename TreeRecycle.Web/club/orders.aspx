@@ -44,7 +44,7 @@
                             <td class="nowrap"><%# Item.RunNumber == 0 ? "-" : Item.RunNumber + "." + Item.RunSequence %></td>
                             <td class="nowrap"><%#: Item.OrderRef %></td>
                             <td><%#: Item.CustomerName %><div class="small"><a href="tel:<%#: Item.CustomerPhone.Replace(" ", "") %>"><%#: Item.CustomerPhone %></a></div><div class="small muted"><%#: Item.CustomerEmail %></div></td>
-                            <td><%#: Item.FullAddress %><div class="small"><a href="<%#: Item.MapsLink %>" target="_blank" rel="noopener">Map</a> &middot; <%#: Country.Distance((double)Item.DistanceKm) %></div><%# Item.LocationNotes == "" ? "" : "<div class=\"small muted\">" + Enc(Item.LocationNotes) + "</div>" %></td>
+                            <td><%#: Item.FullAddress %><div class="small"><a href="<%#: Item.MapsLink %>" target="_blank" rel="noopener">Map</a> &middot; <%#: Item.OnMap ? Country.Distance((double)Item.DistanceKm) : "Not on map - check the address" %></div><%# Item.LocationNotes == "" ? "" : "<div class=\"small muted\">" + Enc(Item.LocationNotes) + "</div>" %></td>
                             <td><%#: Item.Quantity + " x " + Item.SizeLabel %></td>
                             <td class="nowrap"><%#: DateName(Item.ClubCollectionDateId) %></td>
                             <td class="num"><%#: Money(Item.ClubAmount) %></td>

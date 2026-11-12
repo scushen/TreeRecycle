@@ -9,6 +9,17 @@
             <table class="data">
                 <asp:Literal ID="litDetails" runat="server" />
             </table>
+            <h3 class="mt">Map position</h3>
+            <p class="small muted"><asp:Literal ID="litMapHelp" runat="server" /></p>
+            <div class="field">
+                <label for="<%= txtLatLng.ClientID %>">Latitude, longitude</label>
+                <asp:TextBox ID="txtLatLng" runat="server" MaxLength="60" placeholder="53.29500, -6.30500" />
+                <div class="hint">In Google Maps, right-click the club's building and click the two numbers at the top of the menu to copy them. Paste them here.</div>
+            </div>
+            <div class="actions">
+                <asp:Button ID="btnPlace" runat="server" Text="Save map position" CssClass="btn light small" OnClick="btnPlace_Click" />
+                <asp:Button ID="btnRelocate" runat="server" Text="Look up the address again" CssClass="btn light small" OnClick="btnRelocate_Click" />
+            </div>
             <h3 class="mt">Checks</h3>
             <ul class="small">
                 <li>Ring the contact number and confirm they're from the club.</li>

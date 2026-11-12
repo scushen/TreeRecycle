@@ -26,7 +26,7 @@
                         <li class="clubrow">
                             <div>
                                 <h3><%#: Item.Name %></h3>
-                                <div class="muted small"><%#: Item.Place %><%# Item.DistanceText == "" ? "" : " &middot; " + Enc(Item.DistanceText) %></div>
+                                <div class="muted small"><%#: Item.Place %> &middot; <%#: Item.DistanceText == "" ? Item.RadiusText : Item.DistanceText %></div>
                                 <div class="small mt" style="margin-top:6px"><%#: Item.PriceFrom %> &middot; <%#: Item.NextDate %></div>
                             </div>
                             <a class="btn" href="<%#: Item.Url %>">Book collection</a>
