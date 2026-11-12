@@ -116,6 +116,18 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgba(47,107,79,.2
 .msg.warn { background: var(--gold-soft); border-color: #f0d9a8; color: #6f4a08; }
 .msg ul { margin: 6px 0 0; padding-left: 20px; }
 
+/* Booking link bar at the top of every club page */
+.sharebar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; background: var(--pine); color: #fff; border-radius: var(--radius); padding: 16px 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+.sharebar-text { flex: 1 1 260px; }
+.sharebar-text strong { display: block; font-family: "Fraunces", Georgia, serif; font-size: 1.2rem; }
+.sharebar-text span { font-size: .9rem; opacity: .9; }
+.sharebar-link { flex: 2 1 420px; display: flex; flex-wrap: wrap; gap: 8px; }
+.sharebar-link input { flex: 1 1 240px; min-width: 0; font: inherit; font-weight: 600; padding: 10px 12px; border-radius: 10px; border: 0; background: #fff; color: var(--ink); }
+.sharebar .btn { background: var(--berry); }
+.sharebar .btn:hover { background: #962820; }
+.sharebar .btn.light { background: #fff; color: var(--pine); }
+.sharebar .btn.light:hover { background: var(--pine-soft); }
+
 /* Totals */
 .total { background: var(--pine-soft); border-radius: 10px; padding: 14px 18px; }
 .total div { display: flex; justify-content: space-between; }

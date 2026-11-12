@@ -12,8 +12,7 @@
     </asp:PlaceHolder>
 
     <asp:PlaceHolder ID="phLive" runat="server">
-        <div class="msg ok"><strong>You're live.</strong> Share your booking page: <a href="<%: PublicUrl %>" target="_blank"><%: PublicUrl %></a>
-            <button type="button" class="btn small light" onclick="navigator.clipboard.writeText('<%: PublicUrl %>');this.textContent='Copied';">Copy link</button></div>
+        <div class="msg ok"><strong>You're live.</strong> Your booking page is taking bookings.</div>
     </asp:PlaceHolder>
 
     <div class="grid grid-4">
@@ -35,5 +34,4 @@
             <a class="btn light small" href="orders.aspx">All orders</a>
         </div>
     </div>
-    <p class="small muted">Your booking page: <a href="<%: PublicUrl %>" target="_blank"><%: PublicUrl %></a> (you can preview it while logged in, even before you're live).</p>
 </asp:Content>

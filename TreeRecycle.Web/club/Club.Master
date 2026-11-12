@@ -8,7 +8,7 @@
     <title><%: Page.Title %> - <%: ClubName %></title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="<%: ResolveUrl("~/css/site.css") %>?id=3" />
+    <link rel="stylesheet" href="<%: ResolveUrl("~/css/site.css") %>?id=4" />
     <asp:ContentPlaceHolder ID="HeadContent" runat="server" />
 </head>
 <body>
@@ -36,6 +36,33 @@
         <main>
             <div class="wrap">
                 <asp:Literal ID="litStatusBanner" runat="server" />
+                <% if (BookingUrl != "") { %>
+                <div class="sharebar no-print">
+                    <div class="sharebar-text">
+                        <strong>Your booking page</strong>
+                        <span><%: BookingIsLive
+                            ? "Share this link on your website and socials so people can book a collection."
+                            : "This is the link to share on your website and socials. It isn't taking bookings yet, but you can preview it while logged in." %></span>
+                    </div>
+                    <div class="sharebar-link">
+                        <input type="text" id="shareUrl" readonly="readonly" value="<%: BookingUrl %>" onclick="this.select();" aria-label="Your booking page link" />
+                        <button type="button" class="btn" onclick="copyShareUrl(this);">Copy link</button>
+                        <a class="btn light" href="<%: BookingUrl %>" target="_blank" rel="noopener">Open page</a>
+                    </div>
+                </div>
+                <script>
+                    function copyShareUrl(btn) {
+                        var box = document.getElementById('shareUrl');
+                        var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy link'; }, 2000); };
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(box.value).then(done, function () { box.select(); });
+                        } else {
+                            box.select();
+                            try { document.execCommand('copy'); done(); } catch (e) { }
+                        }
+                    }
+                </script>
+                <% } %>
                 <asp:ContentPlaceHolder ID="MainContent" runat="server" />
             </div>
         </main>

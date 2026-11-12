@@ -12,6 +12,11 @@ namespace TreeRecycle.Web.ClubArea
 
         protected string ClubName { get { return Club == null ? "" : Club.ClubName; } }
 
+        /// <summary>The public booking link shown at the top of every club page; "" when there's no club or slug yet.</summary>
+        protected string BookingUrl { get { return Club == null || string.IsNullOrEmpty(Club.Slug) ? "" : Club.PublicUrl; } }
+
+        protected bool BookingIsLive { get { return Club != null && Club.IsOrderable; } }
+
         protected string NavLink(string file, string text)
         {
             bool on = Path.GetFileName(Request.Path).Equals(file, StringComparison.OrdinalIgnoreCase)

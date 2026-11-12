@@ -7,8 +7,6 @@ namespace TreeRecycle.Web.ClubArea
 {
     public partial class Dashboard : ClubPage
     {
-        protected string PublicUrl { get { return CurrentClub.PublicUrl; } }
-
         protected void Page_Load(object sender, EventArgs e)
         {
             Club club = CurrentClub;
